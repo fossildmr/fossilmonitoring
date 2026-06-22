@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบติดตามแผนปฏิบัติการ คุ้มครองแหล่งซากดึกดำบรรพ์ ระยะ 5 ปี (2566–2570)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --primary:#1a4d3e;--primary-light:#2d7a61;--primary-pale:#e8f4f0;
+  --accent:#c8892a;--accent-light:#f5d78e;
+  --danger:#c0392b;--danger-light:#fdecea;
+  --warning:#e67e22;--warning-light:#fef5e7;
+  --success:#27ae60;--success-light:#eafaf1;
+  --info:#2980b9;--info-light:#ebf5fb;
+  --google:#4285f4;--google-light:#e8f0fe;
+  --text:#1a1a2e;--text-muted:#6b7280;
+  --border:#e2e8f0;--bg:#f8faf9;--card:#fff;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);
+ --primary:#1D5C43;
+ --primary-dark:#0E3B2C;
+ --secondary:#2F7A58;
+ --accent:#DDAA33;
+ --bg:#F7FAF8;
+ --active:#EAF6EE;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body { 
+    font-family: 'Sarabun', sans-serif !important; /* บังคับใช้ฟอนต์ที่นี่ */
+    background: var(--bg); 
+    color: var(--text); 
+    font-size: 15px; 
+    line-height: 1.6; 
+}
+
+/* ── LOGIN ── */
+#loginScreen{position:fixed;inset:0;background:linear-gradient(135deg,#1a4d3e 0%,#2d7a61 50%,#1a4d3e 100%);display:flex;align-items:center;justify-content:center;z-index:9999}
+.login-box{background:#fff;border-radius:20px;padding:40px 36px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-logo{text-align:center;font-size:56px;margin-bottom:1px}
+.login-title{text-align:center;font-size:18px;font-weight:700;color:var(--primary);margin-bottom:4px}
+.login-sub{text-align:center;font-size:12.5px;color:var(--text-muted);margin-bottom:30px}
+.login-err{background:var(--danger-light);color:#922b21;border:1px solid #fac5c0;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+.login-links{display:flex;justify-content:space-between;margin-top:14px;font-size:13px;}
+.login-links a{color:var(--primary);text-decoration:none;font-weight:500;}
+.login-links a:hover{text-decoration:underline;}
+.role-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}
+.role-admin{background:#fff3e0;color:#e65100}
+.role-user{background:var(--info-light);color:var(--info)}
+#userInfo{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.12);border-radius:10px;padding:6px 14px}
+#userInfo span{color:#fff;font-size:13px}
+
+/* ── LOADING OVERLAY ── */
+#loadingOverlay{position:fixed;inset:0;background:rgba(26,77,62,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:8888;color:#fff;}
+#loadingOverlay .spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:16px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loadingOverlay p{font-size:15px;opacity:.9;}
+#loadingOverlay small{font-size:12px;opacity:.6;margin-top:6px;}
+
+/* ── HEADER ── */
+.header{
+    background:linear-gradient(
+        90deg,
+        #1D5C43 0%,
+        #174D3B 50%,
+        #0E3B2C 100%
+    );
+    color:white;
+}
+.header-inner{max-width:1400px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px}
+.logo{width:44px;height:44px;background:transparent;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden}
+.header-text h1{font-size:15px;font-weight:600;line-height:1.3}
+.header-text p{font-size:12px;opacity:.75}
+.header-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+/* ── BUTTONS ── */
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:14px;font-weight:500;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff}.btn-ghost:hover{background:rgba(255,255,255,.22)}
+.btn-accent{background:var(--accent);color:#fff}.btn-accent:hover{background:#b07820}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-light)}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#219a52}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#a93226}
+.btn-outline{background:#fff;color:var(--primary);border:1.5px solid var(--primary)}.btn-outline:hover{background:var(--primary-pale)}
+.btn-google{background:var(--google);color:#fff}.btn-google:hover{background:#3367d6}
+.btn-sm{padding:5px 10px;font-size:13px}
+
+/* ── SIDEBAR NAV ── */
+.app-body{display:flex;min-height:calc(100vh - 56px)}
+.sidebar {
+    width: 250px;
+    font-family: 'Sarabun', sans-serif !important;
+    
+    /* รวมรูปภาพและสีไล่เฉด */
+    background: url('fossil-pattern.png.png'), 
+                linear-gradient(180deg, #cedccf 0%, #aec5b1 65%, #7fa485 100%);
+    background-repeat: no-repeat;
+    background-position: bottom center;
+    background-size: 90%, auto;
+    
+    box-shadow: 4px 0 20px rgba(0,0,0,.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-tab {
+    width: calc(100% - 24px);
+    margin: 8px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 18px 20px;
+    border: none;
+    background: transparent;
+    color: #0A3D2A !important; /* สีเข้มขึ้น */
+    font-family: 'Sarabun', sans-serif !important;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+}
+
+.menu-item{
+    color:#1D5C43;
+    border:none;
+    outline:none;
+    box-shadow:none;
+    transition:.2s;
+}
+
+.nav-tab:hover{
+    background:rgba(255,255,255,.55);
+    transform:none;
+}
+
+.nav-tab.active{
+    background:#ffffff;
+    border-radius:22px;
+    color:#0A3D2A;
+    font-weight:700;
+    box-shadow:
+        0 4px 12px rgba(0,0,0,.08);
+}
+
+/* ── MAIN ── */
+.main{flex:1;padding:20px;overflow-x:hidden;max-width:calc(100% - 220px)}
+.page{display:none}.page.active{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--card);border-radius:12px;border:1px solid var(--border);box-shadow:var(--shadow)}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-body{padding:20px}
+.card-title{font-size:15px;font-weight:600;color:var(--text)}
+
+/* ── STAT CARDS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px}
+.stat-card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:16px 20px;box-shadow:var(--shadow)}
+.stat-label{font-size:12px;color:var(--text-muted);margin-bottom:6px}
+.stat-value{font-size:26px;font-weight:700;line-height:1}
+.stat-sub{font-size:12px;color:var(--text-muted);margin-top:4px}
+.stat-card.danger{border-left:4px solid var(--danger)}.stat-card.warning{border-left:4px solid var(--warning)}
+.stat-card.success{border-left:4px solid var(--success)}.stat-card.info{border-left:4px solid var(--info)}
+
+/* ── BADGE ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;white-space:nowrap}
+.badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.7}
+.badge-success{background:var(--success-light);color:#1a7a47}.badge-warning{background:var(--warning-light);color:#b05a10}
+.badge-danger{background:var(--danger-light);color:#992020}.badge-info{background:var(--info-light);color:#1a6090}
+.badge-gray{background:#f3f4f6;color:#4b5563}
+
+/* ── PROGRESS ── */
+.progress-wrap{background:#e5e7eb;border-radius:20px;height:8px;overflow:hidden}
+.progress-bar{height:100%;border-radius:20px;transition:width .5s ease}
+.progress-bar.success{background:var(--success)}.progress-bar.warning{background:var(--warning)}
+.progress-bar.danger{background:var(--danger)}.progress-bar.info{background:var(--info)}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:#f9fafb;padding:10px 14px;text-align:left;font-weight:600;color:var(--text-muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:12px 14px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+tr:last-child td{border-bottom:none}tr:hover td{background:#f9fafb}
+.text-right{text-align:right}.text-center{text-align:center}
+
+/* ── FORM ── */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.form-label.required::after{content:' *';color:var(--danger)}
+.form-control{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);background:#fff;transition:border-color .2s}
+.form-control:focus{outline:none;border-color:var(--primary-light);box-shadow:0 0 0 3px rgba(45,122,97,.12)}
+textarea.form-control{resize:vertical;min-height:80px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+select.form-control{cursor:pointer}
+
+/* ── GRID ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+
+/* ── FILE UPLOAD ── */
+.file-drop{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa}
+.file-drop:hover,.file-drop.dragover{border-color:var(--primary-light);background:var(--primary-pale)}
+.file-drop p{color:var(--text-muted);font-size:13px;margin-top:6px}
+.file-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.file-item{display:flex;align-items:center;gap:10px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px}
+.file-item-name{flex:1;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-item-size{color:var(--text-muted);white-space:nowrap}
+.file-item-remove{background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;padding:2px;line-height:1}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:100%;max-width:720px;max-height:90vh;overflow-y:auto}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.modal-title{font-size:17px;font-weight:700;color:var(--primary)}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-muted);line-height:1;padding:2px}
+.modal-body{padding:24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;background:#f9fafb;border-radius:0 0 16px 16px}
+
+/* ── ALERT ── */
+.alert{border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:14px;display:flex;gap:10px;align-items:flex-start}
+.alert-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.alert-danger{background:var(--danger-light);border:1px solid #fac5c0;color:#922b21}
+.alert-warning{background:var(--warning-light);border:1px solid #fad7a0;color:#935116}
+.alert-success{background:var(--success-light);border:1px solid #a9dfbf;color:#1e8449}
+.alert-info{background:var(--info-light);border:1px solid #a9cce3;color:#1a5276}
+
+/* ── TIMELINE ── */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:14px;padding-bottom:16px;position:relative}
+.tl-dot{width:12px;height:12px;border-radius:50%;background:var(--primary-light);flex-shrink:0;margin-top:5px;position:relative;z-index:1}
+.tl-item:not(:last-child)::before{content:'';position:absolute;left:5px;top:18px;bottom:0;width:2px;background:var(--border)}
+.tl-content{flex:1}
+.tl-meta{font-size:12px;color:var(--text-muted);margin-bottom:3px}
+.tl-text{font-size:13px}
+
+/* ── FILTER ── */
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.filter-bar select,.filter-bar input{padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:'Sarabun',sans-serif;font-size:14px;background:#fff;color:var(--text)}
+.section-title{font-size:16px;font-weight:700;color:var(--primary);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── SYNC STATUS ── */
+.sync-status{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500}
+.sync-ok{background:var(--success-light);color:#1a7a47}
+.sync-err{background:var(--danger-light);color:#922b21}
+.sync-pending{background:var(--warning-light);color:#935116}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:currentColor;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── GOOGLE CALLOUT ── */
+.google-callout{background:var(--google-light);border:1.5px solid var(--google);border-radius:12px;padding:16px 20px;margin-bottom:16px}
+.google-callout h4{color:var(--google);font-size:14px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.google-callout p{font-size:13px;color:var(--text-muted);line-height:1.7}
+.google-callout code{background:#fff;padding:2px 8px;border-radius:4px;font-family:monospace;font-size:12px;color:var(--google);border:1px solid #c5d4f0}
+
+/* ── MISC ── */
+.pct-cell{display:flex;align-items:center;gap:8px}
+.pct-cell .pct-num{min-width:36px;font-weight:600;font-size:14px}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
+.empty-state-icon{font-size:48px;margin-bottom:12px}
+.empty-state h3{font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px}
+.search-box{position:relative}
+.search-box input{padding-left:34px}
+.search-box::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px}
+.notif-dot{display:inline-block;width:8px;height:8px;background:#D85B4E;border-radius:50%;margin-left:6px;vertical-align:middle}
+#scrollTop{position:fixed;bottom:24px;right:24px;width:40px;height:40px;background:var(--primary);color:#fff;border:none;border-radius:50%;cursor:pointer;font-size:18px;display:none;align-items:center;justify-content:center;box-shadow:var(--shadow-md);z-index:500}
+#scrollTop.visible{display:flex}
+@media print{.header-actions,.nav,.no-print,.modal-overlay,#loginScreen,#loadingOverlay{display:none!important}.main{padding:0;max-width:100%}.card{break-inside:avoid;box-shadow:none;border:1px solid #ccc}body{background:#fff}}
+@media(max-width:768px){.form-row,.form-row-3,.grid-2,.grid-3{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(2,1fr)}.header-text h1{font-size:13px}.main{padding:12px}}
+
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LOADING OVERLAY ═══════════ -->
+<div id="loadingOverlay" style="display:none;">
+  <div class="spinner"></div>
+  <p id="loadingMsg">กำลังโหลดข้อมูลจาก Google Sheets...</p>
+  <small id="loadingSub">กรุณารอสักครู่</small>
+</div>
+
+<!-- ═══════════ LOGIN SCREEN ═══════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo"><img src="https://www.dmr.go.th/wp-content/uploads/2022/08/%E0%B8%95%E0%B8%A3%E0%B8%B2%E0%B8%81%E0%B8%A3%E0%B8%A1%E0%B8%97%E0%B8%A3%E0%B8%B1%E0%B8%9E%E0%B8%A2%E0%B8%B2%E0%B8%81%E0%B8%A3%E0%B8%98%E0%B8%A3%E0%B8%93%E0%B8%B5-2.png" alt="ตรากรมทรัพยากรธรณี" style="height:100px;width:auto;"></div>
+    <div class="login-title">ระบบติดตามแผนปฏิบัติการ</div>
+    <div class="login-sub">การคุ้มครองแหล่งซากดึกดำบรรพ์ ระยะ 5 ปี (พ.ศ. 2566–2570)</div>
+    <div class="login-err" id="loginErr">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
+    <div id="loginFormFields">
+      <div class="form-group">
+        <label class="form-label">ชื่อผู้ใช้</label>
+        <input type="text" class="form-control" id="loginUsername" placeholder="กรอกชื่อผู้ใช้">
+      </div>
+      <div class="form-group">
+        <label class="form-label">รหัสผ่าน</label>
+        <input type="password" class="form-control" id="loginPassword" placeholder="กรอกรหัสผ่าน">
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" onclick="doLogin()">เข้าสู่ระบบ</button>
+      <div class="login-links">
+        <a href="#" onclick="showRegisterForm()">สมัครสมาชิกใหม่</a>
+        <a href="#" onclick="showForgotPassword()">ลืมรหัสผ่าน?</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<div class="header">
+  <div class="header-inner">
+    <div class="logo"><img src="https://www.dmr.go.th/wp-content/uploads/2022/08/%E0%B8%95%E0%B8%A3%E0%B8%B2%E0%B8%81%E0%B8%A3%E0%B8%A1%E0%B8%97%E0%B8%A3%E0%B8%B1%E0%B8%9E%E0%B8%A2%E0%B8%B2%E0%B8%81%E0%B8%A3%E0%B8%98%E0%B8%A3%E0%B8%93%E0%B8%B5-2.png" alt="ตรากรมทรัพยากรธรณี" style="width:100%;height:100%;object-fit:contain;"></div>
+    <div class="header-text">
+      <h1>ระบบติดตามแผนปฏิบัติการการคุ้มครองแหล่งซากดึกดำบรรพ์และซากดึกดำบรรพ์</h1>
+      <p>ระยะ 5 ปี (พ.ศ. 2566–2570) · ติดตามความคืบหน้าและประเมินผลรายไตรมาส</p>
+    </div>
+    <div class="header-actions no-print">
+      <div id="userInfo">
+        <span id="userRoleBadge"></span>
+        <span id="userDisplayName"></span>
+      </div>
+      <button class="btn btn-ghost admin-only" onclick="manualSync()" title="ซิงก์ข้อมูลจาก Sheets">🔄 Sync</button>
+      <button class="btn btn-ghost admin-only" onclick="exportData()">📥 สำรอง</button>
+      <button class="btn btn-ghost admin-only" onclick="importDataTrigger()">📤 นำเข้า</button>
+      <button class="btn btn-accent" onclick="printDashboard()">🖨️ Export PDF</button>
+      <button class="btn btn-ghost" onclick="doLogout()" title="ออกจากระบบ">🚪</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    </div>
+  </div>
+</div>
+
+<!-- ═══ GOOGLE WORKSPACE BANNER (เฉพาะผู้ดูแลระบบ) ═══ -->
+<div id="googleBanner" class="admin-only" style="background:linear-gradient(90deg,#1a5276,#2d7a61);color:#fff;padding:7px 20px;font-size:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span id="connDot" style="display:inline-block;width:8px;height:8px;background:#f39c12;border-radius:50%;"></span>
+    <strong>Google Sheets Sync</strong>
+    <span>|</span>
+    <a href="https://docs.google.com/spreadsheets/d/1aIlIWVtqP21YQl4DfW1tI1TlMIwHwv31q9fKpCzmJ5k/edit" target="_blank" style="color:#aed6f1;text-decoration:none;font-weight:600;">📊 Sheets</a>
+    <a href="https://drive.google.com/drive/folders/1HJHPS6dxvwnN21xKbK5TaZW6Q6QbKHRE" target="_blank" style="color:#aed6f1;text-decoration:none;font-weight:600;">📁 หลักฐาน</a>
+  </div>
+  <div id="gsConnStatus" style="opacity:.9;font-size:11px;">⏳ กำลังเชื่อมต่อ...</div>
+</div>
+
+<!-- ═══════════ APP BODY ═══════════ -->
+<div class="app-body">
+
+<!-- ═══ SIDEBAR NAV ═══ -->
+<div class="sidebar no-print">
+  <button class="nav-tab active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
+  <button class="nav-tab" onclick="showPage('projects',this)">📋 โครงการทั้งหมด</button>
+  <button class="nav-tab" onclick="showPage('update',this)">✏️ กรอกความคืบหน้า</button>
+  <button class="nav-tab" onclick="showPage('alerts',this)">⚠️ แจ้งเตือน<span class="notif-dot" id="alertDot" style="display:none;vertical-align:middle;margin-left:4px;"></span></button>
+  <button class="nav-tab" onclick="showPage('history',this)">📜 ประวัติการอัปเดต</button>
+  <button class="nav-tab admin-only" id="settingsTab" onclick="showPage('settings',this)">⚙️ ตั้งค่า</button>
+</div>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="main">
+
+<!-- ── DASHBOARD ── -->
+<div id="page-dashboard" class="page active">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+    <div>
+      <h2 style="font-size:20px;font-weight:700;color:var(--primary);">ภาพรวมแผนปฏิบัติการ</h2>
+      <p style="font-size:13px;color:var(--text-muted);" id="dashLastUpdate">อัปเดตล่าสุด: —</p>
+    </div>
+    <div style="display:flex;gap:8px;" class="no-print">
+      <select class="form-control" style="width:auto;font-size:13px;" id="dashYearFilter" onchange="renderDashboard()">
+        <option value="">ทุกปี</option>
+        <option value="2569">พ.ศ. 2569</option>
+        <option value="2570">พ.ศ. 2570</option>
+      </select>
+      <select class="form-control" style="width:auto;font-size:13px;" id="dashQFilter" onchange="renderDashboard()">
+        <option value="">ทุกไตรมาส</option>
+        <option value="1">ไตรมาส 1</option><option value="2">ไตรมาส 2</option>
+        <option value="3">ไตรมาส 3</option><option value="4">ไตรมาส 4</option>
+      </select>
+    </div>
+  </div>
+  <div class="stats-grid" id="statsGrid"></div>
+  <div id="alertBanner"></div>
+  <div class="grid-2" style="margin-bottom:20px;">
+    <div class="card">
+      <div class="card-header"><span class="card-title">สถานะโครงการทั้งหมด</span></div>
+      <div class="card-body" style="height:240px;display:flex;align-items:center;justify-content:center;">
+        <canvas id="chartStatus" style="max-height:220px;"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">ความคืบหน้าตามแผนปฏิบัติการ</span></div>
+      <div class="card-body" style="height:240px;display:flex;align-items:center;justify-content:center;">
+        <canvas id="chartStrategy" style="max-height:220px;"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header">
+      <span class="card-title">ความคืบหน้าโครงการ (เรียงตาม %)</span>
+      <button class="btn btn-sm btn-outline no-print" onclick="showPage('projects',document.querySelectorAll('.nav-tab')[1])">ดูทั้งหมด →</button>
+    </div>
+    <div class="card-body" id="dashProjectList"></div>
+  </div>
+</div>
+
+<!-- ── PROJECTS ── -->
+<div id="page-projects" class="page">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <h2 style="font-size:20px;font-weight:700;color:var(--primary);">โครงการทั้งหมด</h2>
+    <div class="no-print admin-only" id="addProjBtn">
+      <button class="btn btn-accent" onclick="openAddProject()">+ เพิ่มโครงการ</button>
+    </div>
+  </div>
+  <div class="filter-bar no-print">
+    <div class="search-box">
+      <input type="text" id="searchProj" placeholder="ค้นหาโครงการ..." class="form-control" style="width:220px;" oninput="renderProjectTable()">
+    </div>
+    <select id="filterPlan" class="form-control" style="width:auto;" onchange="renderProjectTable()">
+      <option value="">ทุกแผนปฏิบัติการ</option>
+    </select>
+    <select id="filterStatus" class="form-control" style="width:auto;" onchange="renderProjectTable()">
+      <option value="">ทุกสถานะ</option>
+      <option value="ปกติ">ปกติ</option><option value="ล่าช้า">ล่าช้า</option>
+      <option value="วิกฤต">วิกฤต</option><option value="เสร็จสิ้น">เสร็จสิ้น</option>
+    </select>
+    <select id="filterYear" class="form-control" style="width:auto;" onchange="renderProjectTable()">
+      <option value="">ทุกปี</option>
+      <option value="2569">2569</option><option value="2570">2570</option>
+    </select>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:44px;">ลำดับ</th>
+            <th>ชื่อโครงการ</th>
+            <th>แผนปี</th>
+            <th>ระยะเวลาเริ่มต้น</th>
+            <th>ระยะเวลาสิ้นสุด</th>
+            <th style="min-width:150px;">ความคืบหน้า</th>
+            <th>สถานะ</th>
+            <th class="no-print">จัดการ</th>
+          </tr>
+        </thead>
+        <tbody id="projectTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── UPDATE ── -->
+<div id="page-update" class="page">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <h2 style="font-size:20px;font-weight:700;color:var(--primary);">กรอกข้อมูลความคืบหน้า</h2>
+    <div id="syncStatusBadge"></div>
+  </div>
+  <div id="gsheetsNotice" class="admin-only" style="margin-bottom:16px;"></div>
+  <div class="grid-2" style="align-items:start;gap:20px;">
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><span class="card-title">เลือกโครงการและไตรมาส</span></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label required">โครงการ</label>
+            <select class="form-control" id="updProjectId" onchange="loadProjectForUpdate()">
+              <option value="">— เลือกโครงการ —</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label required">ประจำปี</label>
+              <select class="form-control" id="updYear" onchange="updateStatusPreview()">
+                <option>2569</option><option>2570</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label required">ไตรมาส</label>
+              <select class="form-control" id="updQuarter" onchange="updateStatusPreview()">
+                <option value="1">ไตรมาส 1 (ต.ค.–ธ.ค.)</option>
+                <option value="2">ไตรมาส 2 (ม.ค.–มี.ค.)</option>
+                <option value="3">ไตรมาส 3 (เม.ย.–มิ.ย.)</option>
+                <option value="4">ไตรมาส 4 (ก.ค.–ก.ย.)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card" id="projInfoCard" style="display:none;margin-bottom:16px;">
+        <div class="card-header"><span class="card-title">ข้อมูลโครงการ</span></div>
+        <div class="card-body" id="projInfoBody"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><span class="card-title">ข้อมูลความคืบหน้า</span></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label required">ชื่อผู้กรอกข้อมูล</label>
+            <input type="text" class="form-control" id="updReporter" placeholder="ระบุชื่อ-นามสกุล">
+          </div>
+          <div class="form-group">
+            <label class="form-label required">ความคืบหน้าสะสม (%)</label>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <input type="range" id="updProgress" min="0" max="100" value="0" style="flex:1;" oninput="onUpdProgressInput(this.value)">
+              <span id="updProgressVal" style="font-size:18px;font-weight:700;min-width:50px;color:var(--primary);">0%</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label required">ผลการดำเนินงาน / กิจกรรมที่ดำเนินการ</label>
+            <textarea class="form-control" id="updActivity" rows="4" placeholder="อธิบายกิจกรรมที่ดำเนินการในช่วงไตรมาสนี้..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">ปัญหา/อุปสรรค</label>
+            <textarea class="form-control" id="updProblems" rows="2" placeholder="ระบุปัญหาหรืออุปสรรคที่พบ (ถ้ามี)..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">แนวทางแก้ไข/ข้อเสนอแนะ</label>
+            <textarea class="form-control" id="updSolution" rows="2" placeholder="แนวทางแก้ไขหรือข้อเสนอแนะ..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">งบประมาณที่ใช้จ่ายในไตรมาสนี้ (บาท)</label>
+            <input type="number" class="form-control" id="updBudgetUsed" placeholder="0">
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><span class="card-title">📎 แนบไฟล์หลักฐาน</span></div>
+        <div class="card-body">
+          <div class="file-drop" id="fileDrop" onclick="document.getElementById('fileInput').click()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropFile(event)">
+            <div style="font-size:32px;">📁</div>
+            <p><strong>คลิกเพื่อเลือกไฟล์</strong> หรือลากไฟล์มาวางที่นี่</p>
+            <p style="font-size:12px;">รองรับ: PDF, Word, Excel, รูปภาพ (สูงสุด 10MB/ไฟล์)</p>
+          </div>
+          <input type="file" id="fileInput" multiple style="display:none" onchange="handleFiles(event)">
+          <div class="file-list" id="fileList"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button class="btn btn-outline" onclick="clearUpdateForm()">ล้างข้อมูล</button>
+        <button class="btn btn-success" onclick="submitUpdate()" style="min-width:160px;" id="submitBtn">💾 บันทึกข้อมูล</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ALERTS ── -->
+<div id="page-alerts" class="page">
+  <h2 style="font-size:20px;font-weight:700;color:var(--primary);margin-bottom:16px;">การแจ้งเตือนโครงการ</h2>
+
+  <div class="google-callout admin-only" style="border-color:var(--info);background:var(--info-light);margin-bottom:16px;">
+    <h4 style="color:var(--info);">📧 อีเมลแจ้งเตือนอัตโนมัติ</h4>
+    <p>เมื่อมีโครงการที่รายงานสถานะ <strong>ล่าช้า</strong> หรือ <strong>วิกฤต</strong> ระบบจะส่งอีเมลแจ้งเตือนไปยังอีเมลด้านล่างนี้โดยอัตโนมัติทันทีที่บันทึกข้อมูล รวมถึงสรุปรายวันเวลา 08:00 น.</p>
+    <p style="margin-top:6px;"><code>fossildmrmanagement@gmail.com</code> &nbsp; <code>fossildmr30@gmail.com</code></p>
+  </div>
+
+  <div class="card admin-only" style="margin-bottom:16px;">
+    <div class="card-header"><span class="card-title">⚙️ อีเมลแจ้งเตือนเพิ่มเติม (นอกเหนือจากอีเมลอัตโนมัติ)</span></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">เพิ่มอีเมลที่ต้องการให้ได้รับการแจ้งเตือนอัตโนมัติด้วย (เช่น หัวหน้างาน, ผู้ประสานงานหน่วยรับผิดชอบ) — อีเมลเหล่านี้จะได้รับทุกครั้งที่มีการแจ้งเตือนอัตโนมัติ พร้อมกับอีเมลหลัก</p>
+      <div id="extraAlertEmailList" style="margin-bottom:12px;"></div>
+      <div style="display:flex;gap:8px;">
+        <input type="email" class="form-control" id="newAlertEmail" placeholder="กรอกอีเมล เช่น name@example.com" style="flex:1;">
+        <button class="btn btn-primary" onclick="addAlertEmail()">+ เพิ่ม</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card admin-only" style="margin-bottom:16px;">
+    <div class="card-header"><span class="card-title">✉️ ส่งอีเมลแจ้งเตือนแบบกำหนดเอง</span></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">ใช้สำหรับส่งแจ้งเตือนไปยังอีเมลอื่นๆ เป็นกรณีพิเศษ นอกเหนือจากอีเมลอัตโนมัติด้านบน</p>
+      <div class="form-group">
+        <label class="form-label">อีเมลผู้รับ (คั่นด้วยลูกจุลภาค , สำหรับหลายอีเมล)</label>
+        <input type="text" class="form-control" id="manualAlertEmails" placeholder="example1@mail.com, example2@mail.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">หัวข้อ</label>
+        <input type="text" class="form-control" id="manualAlertSubject" placeholder="หัวข้อแจ้งเตือน">
+      </div>
+      <div class="form-group">
+        <label class="form-label">ข้อความ</label>
+        <textarea class="form-control" id="manualAlertBody" rows="4" placeholder="รายละเอียดที่ต้องการแจ้งเตือน..."></textarea>
+      </div>
+      <button class="btn btn-accent" onclick="sendManualAlertEmail()">📤 ส่งอีเมลแจ้งเตือน</button>
+    </div>
+  </div>
+
+  <div id="alertsContent"></div>
+</div>
+
+<!-- ── HISTORY ── -->
+<div id="page-history" class="page">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <h2 style="font-size:20px;font-weight:700;color:var(--primary);">ประวัติการอัปเดตทั้งหมด</h2>
+    <div style="display:flex;gap:8px;">
+      <select class="form-control no-print" style="width:auto;font-size:13px;" id="histFilter" onchange="renderHistory()">
+        <option value="">ทุกโครงการ</option>
+      </select>
+      <button class="btn btn-sm btn-outline no-print" onclick="exportHistory()">📥 Export CSV</button>
+    </div>
+  </div>
+  <div class="card"><div class="card-body" id="historyContent"></div></div>
+</div>
+
+<!-- ── SETTINGS ── -->
+<div id="page-settings" class="page">
+  <h2 style="font-size:20px;font-weight:700;color:var(--primary);margin-bottom:16px;">⚙️ ตั้งค่าระบบ <span style="font-size:13px;color:var(--text-muted);font-weight:400;">(เฉพาะผู้ดูแลระบบ)</span></h2>
+  <div class="grid-2" style="align-items:start;margin-bottom:20px;">
+    <div class="card">
+      <div class="card-header"><span class="card-title">🔗 Google Sheets Sync</span></div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">URL ของ Apps Script Web App</label>
+          <input type="url" class="form-control" id="gsheetsUrl" placeholder="https://script.google.com/macros/s/.../exec">
+          <p style="font-size:12px;color:var(--text-muted);margin-top:6px;">URL ที่ใช้งานอยู่ปัจจุบัน</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Spreadsheet ID</label>
+          <input type="text" class="form-control" id="gsheetsSID">
+          <p style="font-size:12px;margin-top:4px;"><a href="https://docs.google.com/spreadsheets/d/1aIlIWVtqP21YQl4DfW1tI1TlMIwHwv31q9fKpCzmJ5k/edit" target="_blank" style="color:var(--google);">📊 เปิด Google Sheets 🔗</a></p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-google" onclick="saveGSheetsConfig()">💾 บันทึก</button>
+          <button class="btn btn-outline" onclick="testGSheetsConn()">🔌 ทดสอบ</button>
+          <button class="btn btn-outline" onclick="manualSync()">🔄 ดึงข้อมูลใหม่</button>
+        </div>
+        <div id="gsSyncResult" style="margin-top:12px;"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">📁 Google Drive</span></div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">Folder ID — ไฟล์หลักฐาน</label>
+          <input type="text" class="form-control" id="gdriveFolderID" value="1HJHPS6dxvwnN21xKbK5TaZW6Q6QbKHRE">
+        </div>
+        <button class="btn btn-google" onclick="saveDriveConfig()">💾 บันทึก</button>
+      </div>
+    </div>
+  </div>
+  <div class="grid-3" style="align-items:start;margin-bottom:20px;">
+    <div class="card">
+      <div class="card-header"><span class="card-title">📋 แผนปฏิบัติการ</span></div>
+      <div class="card-body">
+        <div id="planList" style="margin-bottom:12px;"></div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" class="form-control" id="newPlan" placeholder="ชื่อแผนปฏิบัติการ" style="flex:1;">
+          <button class="btn btn-primary" onclick="addPlan()">+ เพิ่ม</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">🎯 เป้าหมาย/ตัวชี้วัดที่</span></div>
+      <div class="card-body">
+        <div id="indicatorList" style="margin-bottom:12px;"></div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" class="form-control" id="newIndicator" placeholder="เช่น เป้าหมาย/ตัวชี้วัดที่ 1.1" style="flex:1;">
+          <button class="btn btn-primary" onclick="addIndicator()">+ เพิ่ม</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">👥 จัดการบัญชีผู้ใช้</span></div>
+      <div class="card-body">
+        <div id="userList" style="margin-bottom:12px;"></div>
+        <button class="btn btn-primary" style="width:100%;" onclick="openAddUser()">+ เพิ่มบัญชีผู้ใช้</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title" style="color:var(--danger);">⚠️ จัดการข้อมูล</span></div>
+    <div class="card-body" style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-outline" onclick="exportData()">📥 Export ข้อมูล (.json)</button>
+      <button class="btn btn-outline" onclick="importDataTrigger()">📤 นำเข้าข้อมูล (.json)</button>
+      <button class="btn btn-danger" onclick="clearAllData()">🗑️ ล้างข้อมูลทั้งหมด</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- end .main -->
+</div><!-- end .app-body -->
+
+<!-- ═══════════ MODALS ═══════════ -->
+<!-- Add/Edit Project Modal -->
+<div class="modal-overlay" id="projectModal">
+  <div class="modal" style="max-width:760px;">
+    <div class="modal-header">
+      <span class="modal-title" id="projectModalTitle">เพิ่มโครงการใหม่</span>
+      <button class="modal-close" onclick="closeModal('projectModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editProjectId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label required">แผนปฏิบัติการ</label>
+          <select class="form-control" id="projPlan"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label required">เป้าหมาย/ตัวชี้วัดที่</label>
+          <select class="form-control" id="projIndicator"></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label required">ชื่อโครงการ</label>
+        <input type="text" class="form-control" id="projName">
+      </div>
+      <div class="form-group">
+        <label class="form-label required">ค่าเป้าหมาย (KPI)</label>
+        <input type="text" class="form-control" id="projKPI">
+      </div>
+      <div class="form-group">
+        <label class="form-label required">หน่วยงานรับผิดชอบ</label>
+        <input type="text" class="form-control" id="projOwner">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label required">แผนปี</label>
+          <select class="form-control" id="newProjYear">
+            <option value="2569">พ.ศ. 2569</option><option value="2570">พ.ศ. 2570</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">งบประมาณ (บาท)</label>
+          <input type="number" class="form-control" id="projBudget" placeholder="0">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label required">เดือนเริ่มต้น</label>
+          <div style="display:flex;gap:8px;">
+            <select class="form-control" id="projStartMonth" style="flex:1;">
+              <option value="1">มกราคม</option><option value="2">กุมภาพันธ์</option><option value="3">มีนาคม</option>
+              <option value="4">เมษายน</option><option value="5">พฤษภาคม</option><option value="6">มิถุนายน</option>
+              <option value="7">กรกฎาคม</option><option value="8">สิงหาคม</option><option value="9">กันยายน</option>
+              <option value="10">ตุลาคม</option><option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option>
+            </select>
+            <select class="form-control" id="projStartYear" style="width:100px;">
+              <option>2566</option><option>2567</option><option>2568</option><option>2569</option><option>2570</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label required">เดือนสิ้นสุด</label>
+          <div style="display:flex;gap:8px;">
+            <select class="form-control" id="projEndMonth" style="flex:1;">
+              <option value="1">มกราคม</option><option value="2">กุมภาพันธ์</option><option value="3">มีนาคม</option>
+              <option value="4">เมษายน</option><option value="5">พฤษภาคม</option><option value="6">มิถุนายน</option>
+              <option value="7">กรกฎาคม</option><option value="8">สิงหาคม</option><option value="9">กันยายน</option>
+              <option value="10">ตุลาคม</option><option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option>
+            </select>
+            <select class="form-control" id="projEndYear" style="width:100px;">
+              <option>2566</option><option>2567</option><option>2568</option><option>2569</option><option>2570</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:8px;">
+        <label class="form-label">กำหนดค่า % เป้าหมายสะสมที่ "ควรจะถึง" ในแต่ละไตรมาส</label>
+        <p style="font-size:12px;color:var(--text-muted);margin:-2px 0 10px 0;">ระบบจะเทียบกับ % ความคืบหน้าจริงที่มีผู้กรอกในแต่ละไตรมาส เพื่อตัดสินสถานะอัตโนมัติ (ปกติ/ล่าช้า/วิกฤต/เสร็จสิ้น)</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;">
+            <span style="min-width:130px;font-size:13px;font-weight:600;">ไตรมาส 1 (ต.ค.–ธ.ค.)</span>
+            <input type="number" min="0" max="100" class="form-control qt-input" id="qt_Q1" placeholder="เช่น 25" style="width:90px;">
+            <span style="font-size:13px;color:var(--text-muted);">%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;">
+            <span style="min-width:130px;font-size:13px;font-weight:600;">ไตรมาส 2 (ม.ค.–มี.ค.)</span>
+            <input type="number" min="0" max="100" class="form-control qt-input" id="qt_Q2" placeholder="เช่น 50" style="width:90px;">
+            <span style="font-size:13px;color:var(--text-muted);">%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;">
+            <span style="min-width:130px;font-size:13px;font-weight:600;">ไตรมาส 3 (เม.ย.–มิ.ย.)</span>
+            <input type="number" min="0" max="100" class="form-control qt-input" id="qt_Q3" placeholder="เช่น 75" style="width:90px;">
+            <span style="font-size:13px;color:var(--text-muted);">%</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;">
+            <span style="min-width:130px;font-size:13px;font-weight:600;">ไตรมาส 4 (ก.ค.–ก.ย.)</span>
+            <input type="number" min="0" max="100" class="form-control qt-input" id="qt_Q4" placeholder="เช่น 100" style="width:90px;">
+            <span style="font-size:13px;color:var(--text-muted);">%</span>
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:10px;">
+          📌 หลักการตัดสินสถานะ: ความคืบหน้าจริง ≥ ค่าเป้าหมายของไตรมาสนั้น → <strong>ปกติ</strong> &nbsp;|&nbsp;
+          ต่ำกว่าเป้าหมายไม่เกิน 15% → <strong>ล่าช้า</strong> &nbsp;|&nbsp;
+          ต่ำกว่าเป้าหมายมากกว่า 15% → <strong>วิกฤต</strong> &nbsp;|&nbsp;
+          ความคืบหน้าครบ 100% → <strong>เสร็จสิ้น</strong>
+        </p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('projectModal')">ยกเลิก</button>
+      <button class="btn btn-success" onclick="saveProject()">💾 บันทึกโครงการ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Project Detail Modal -->
+<div class="modal-overlay" id="projectDetailModal">
+  <div class="modal" style="max-width:860px;">
+    <div class="modal-header">
+      <span class="modal-title" id="detailModalTitle">รายละเอียดโครงการ</span>
+      <button class="modal-close" onclick="closeModal('projectDetailModal')">✕</button>
+    </div>
+    <div class="modal-body" id="projectDetailBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('projectDetailModal')">ปิด</button>
+      <button class="btn btn-accent" onclick="printProjectDetail()">🖨️ Print / PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal-overlay" id="addUserModal">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <span class="modal-title" id="addUserTitle">เพิ่มบัญชีผู้ใช้</span>
+      <button class="modal-close" onclick="closeModal('addUserModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editUserId">
+      <div class="form-group">
+        <label class="form-label">ชื่อหน่วยงาน</label>
+        <input type="text" class="form-control" id="uOrganization" placeholder="สังกัด/หน่วยงาน">
+      </div>
+      <div class="form-group">
+        <label class="form-label required">ชื่อที่แสดง</label>
+        <input type="text" class="form-control" id="uDisplayName">
+      </div>
+      <div class="form-group">
+        <label class="form-label">อีเมล</label>
+        <input type="email" class="form-control" id="uEmail">
+      </div>
+      <div class="form-group">
+        <label class="form-label required">ชื่อผู้ใช้</label>
+        <input type="text" class="form-control" id="uUsername">
+      </div>
+      <div class="form-group">
+        <label class="form-label" id="uPasswordLabel">รหัสผ่าน</label>
+        <input type="password" class="form-control" id="uPassword" placeholder="กรอกเพื่อตั้งรหัสผ่านใหม่">
+        <p id="uPasswordHint" style="font-size:12px;color:var(--text-muted);margin-top:4px;display:none;">เว้นว่างไว้หากไม่ต้องการเปลี่ยนรหัสผ่าน</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label required">บทบาท</label>
+        <select class="form-control" id="uRole">
+          <option value="user">👤 ผู้ใช้งานทั่วไป</option>
+          <option value="admin">👑 ผู้ดูแลระบบ</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('addUserModal')">ยกเลิก</button>
+      <button class="btn btn-success" onclick="saveUser()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<button id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// ═══════════════════════════════════════════════════
+// ★ CONFIG — แก้ไข APP_URL เป็น URL ของ Apps Script (Code.gs) ที่คุณ Deploy แล้ว
+// ดูวิธี Deploy ได้ในไฟล์ Code.gs ที่แนบมาด้วย
+// ═══════════════════════════════════════════════════
+const APP_URL = 'https://script.google.com/macros/s/AKfycbyUKFskwAt-elJ6GBbUUc8b02dBfBz_8HxaAmQpxMOM9K2lvtm5IIKMvr1YFACVDoX4nw/exec'; // ← วาง URL Web App ของ Code.gs ที่นี่
+const SHEET_ID = '1aIlIWVtqP21YQl4DfW1tI1TlMIwHwv31q9fKpCzmJ5k';
+const DRIVE_FOLDER = '1HJHPS6dxvwnN21xKbK5TaZW6Q6QbKHRE';
+// ใช้ตัวแปรเดิมเพื่อความเข้ากันได้กับโค้ดส่วนอื่นที่อาจอ้างชื่อเดิม
+const GAS_URL = APP_URL;
+const API_URL = APP_URL;
+
+// ═══════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════
+let CURRENT_USER = null;
+
+async function doLogin(){
+
+  const u=document.getElementById('loginUsername').value.trim();
+  const p=document.getElementById('loginPassword').value;
+
+  let response=await fetch(API_URL,{
+
+      method:'POST',
+
+      body:JSON.stringify({
+
+          action:'loginUser',
+
+          data:{
+            username:u,
+            password:p
+          }
+
+      })
+
+  });
+
+  let result=await response.json();
+
+  if(!result.ok){
+
+      document.getElementById('loginErr').style.display='block';
+      return;
+
+  }
+
+  CURRENT_USER=result.user;
+
+  localStorage.setItem(
+      'fossilSession',
+      JSON.stringify(result.user)
+  );
+
+  document.getElementById('loginScreen').style.display='none';
+
+  applyRoleUI();
+
+  bootApp();
+
+}
+
+function doLogout(){
+  if(!confirm('ต้องการออกจากระบบ?'))return;
+  localStorage.removeItem('fossilSession');CURRENT_USER=null;location.reload();
+}
+function checkSession(){
+  const raw=localStorage.getItem('fossilSession');
+  if(!raw) return false;
+  CURRENT_USER=JSON.parse(raw);
+  return true;
+}
+
+function isAdmin(){return CURRENT_USER&&CURRENT_USER.role==='admin';}
+function applyRoleUI(){
+  if(!CURRENT_USER)return;
+  document.getElementById('userRoleBadge').innerHTML=isAdmin()
+    ?'<span class="role-badge role-admin">👑 Admin</span>'
+    :'<span class="role-badge role-user">👤 User</span>';
+  document.getElementById('userDisplayName').textContent=CURRENT_USER.displayName;
+  document.querySelectorAll('.admin-only').forEach(el=>el.style.display=isAdmin()?'':'none');
+  document.getElementById('settingsTab').style.display=isAdmin()?'':'none';
+  document.getElementById('updReporter').value=CURRENT_USER.displayName;
+}
+
+function showRegisterForm() {
+  const html = `
+    <div class="form-group">
+      <label class="form-label">ชื่อหน่วยงาน</label>
+      <input type="text" class="form-control" id="regOrg" placeholder="กรอกชื่อสังกัด/หน่วยงาน">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label required">คำนำหน้าชื่อ</label>
+        <select class="form-control">
+          <option value="1">เลือกคำนำหน้าชื่อ</option><option value="2">นาย</option>
+          <option value="3">นาง</option><option value="4">นางสาว</option>
+          <option value="5">ไม่ระบุ</option>
+        </select>
+       </div>
+     </div>
+    <div class="form-group">
+      <label class="form-label">ชื่อ-สกุล ผู้ใช้งาน</label>
+      <input type="text" class="form-control" id="regName" placeholder="กรอกชื่อ-นามสกุล ภาษาไทย">
+    </div>
+    <div class="form-group">
+      <label class="form-label">อีเมลล์</label>
+      <input type="text" class="form-control" id="regEmail" placeholder="กรอกอีเมลล์">
+    </div>
+    <div class="form-group">
+      <label class="form-label">ชื่อผู้ใช้สำหรับเข้าระบบ (Username)</label>
+      <input type="text" class="form-control" id="regUser" placeholder="ภาษาอังกฤษหรือตัวเลข">
+    </div>
+    <div class="form-group">
+      <label class="form-label">รหัสผ่าน</label>
+      <input type="password" class="form-control" id="regPass" placeholder="ไม่ต่ำกว่า 4 ตัวอักษร">
+    </div>
+    <button class="btn btn-success" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="submitRegister()">ยืนยันการสมัครสมาชิก</button>
+    <button class="btn btn-outline" style="width:100%;justify-content:center;" onclick="resetToLoginForm()">ย้อนกลับหน้าเข้าสู่ระบบ</button>
+  `;
+  document.getElementById('loginFormFields').innerHTML = html;
+}
+
+async function submitRegister() {
+
+try {
+
+// รับค่าจากฟอร์ม
+const organization = document.getElementById('regOrg').value.trim();
+const name = document.getElementById('regName').value.trim();
+const email = document.getElementById('regEmail').value.trim();
+const username = document.getElementById('regUser').value.trim();
+const password = document.getElementById('regPass').value;
+
+// ตรวจสอบข้อมูล
+if (!organization || !name || !email || !username || !password) {
+  alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+  return;
+}
+
+// แสดงสถานะ
+console.log("กำลังส่งข้อมูลสมัครสมาชิก...");
+
+// ส่งข้อมูลไป Apps Script
+const response = await fetch(API_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "text/plain;charset=utf-8"
+  },
+  body: JSON.stringify({
+    action: "registerUser",
+    data: {
+      organization: organization,
+      name: name,
+      email: email,
+      username: username,
+      password: password
+    }
+  })
+});
+
+// แปลงผลลัพธ์เป็น JSON
+const result = await response.json();
+
+console.log(result);
+
+if (result.ok) {
+
+  alert("สมัครสมาชิกสำเร็จ");
+
+  resetToLoginForm();
+
+} else {
+
+  alert(result.error || "เกิดข้อผิดพลาด");
+
+}
+
+} catch (err) {
+
+console.error(err);
+
+alert("ไม่สามารถเชื่อมต่อระบบได้\n\n" + err);
+
+}
+
+}
+
+// หน้าต่างลืมรหัสผ่าน (ข้อ 3)
+function showForgotPassword() {
+  const html = `
+    <div style="margin-bottom:15px; font-size:13px; color:var(--text-muted);">กรุณากรอกชื่อผู้ใช้ของคุณ เพื่อแสดงค้นหาหรือรีเซ็ตรหัสผ่านพนักงาน</div>
+    <div class="form-group">
+      <label class="form-label">ชื่อผู้ใช้ (Username)</label>
+      <input type="text" class="form-control" id="forgotUser" placeholder="กรอกชื่อบัญชีผู้ใช้">
+    </div>
+    <button class="btn btn-accent" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="submitForgotPassword()">ตรวจสอบรหัสผ่าน</button>
+    <button class="btn btn-outline" style="width:100%;justify-content:center;" onclick="resetToLoginForm()">ย้อนกลับ</button>
+  `;
+  document.getElementById('loginFormFields').innerHTML = html;
+}
+
+async function submitForgotPassword() {
+  const username = document.getElementById('forgotUser').value.trim();
+  if(!username){ alert('กรุณากรอกชื่อผู้ใช้'); return; }
+  try{
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "forgotPassword", data: { username } })
+    });
+    const result = await response.json();
+    if(result.ok){
+      alert(result.message || 'ส่งรหัสผ่านชั่วคราวไปยังอีเมลที่ลงทะเบียนไว้แล้ว กรุณาตรวจสอบอีเมลของคุณ');
+      resetToLoginForm();
+    } else {
+      alert(result.error || 'ไม่พบชื่อผู้ใช้งานนี้ในระบบ');
+    }
+  }catch(err){
+    alert('ไม่สามารถเชื่อมต่อระบบได้\n\n' + err);
+  }
+}
+
+function resetToLoginForm() {
+  location.reload();
+}
+
+
+// ═══════════════════════════════════════════════════
+// DATA STORE
+// ═══════════════════════════════════════════════════
+let DB = {
+  projects: [],
+  updates: [],
+  plans: [
+    'แผนปฏิบัติการ เรื่องที่ 1: การสำรวจ ศึกษา วิจัยแหล่งซากดึกดำบรรพ์และซากดึกดำบรรพ์',
+    'แผนปฏิบัติการ เรื่องที่ 2: การบริหารจัดการแหล่งซากดึกดำบรรพ์และซากดึกดำบรรพ์',
+    'แผนปฏิบัติการ เรื่องที่ 3: การพัฒนาแหล่งเรียนรู้ด้านซากดึกดำบรรพ์',
+    'แผนปฏิบัติการ เรื่องที่ 4: การพัฒนากฎหมาย'
+  ],
+  indicators: ['เป้าหมาย/ตัวชี้วัดที่ 1.1','เป้าหมาย/ตัวชี้วัดที่ 1.2','เป้าหมาย/ตัวชี้วัดที่ 1.3','เป้าหมาย/ตัวชี้วัดที่ 1.4','เป้าหมาย/ตัวชี้วัดที่ 2.1','เป้าหมาย/ตัวชี้วัดที่ 3.1','เป้าหมาย/ตัวชี้วัดที่ 3.2','เป้าหมาย/ตัวชี้วัดที่ 3.3','เป้าหมาย/ตัวชี้วัดที่ 4.1','เป้าหมาย/ตัวชี้วัดที่ 5.1','เป้าหมาย/ตัวชี้วัดที่ 5.2','เป้าหมาย/ตัวชี้วัดที่ 5.3','เป้าหมาย/ตัวชี้วัดที่ 5.4','เป้าหมาย/ตัวชี้วัดที่ 6.1','เป้าหมาย/ตัวชี้วัดที่ 6.2','เป้าหมาย/ตัวชี้วัดที่ 6.3','เป้าหมาย/ตัวชี้วัดที่ 7.1','เป้าหมาย/ตัวชี้วัดที่ 8.1'],
+  alertEmails: [],
+  users: [],
+  lastUpdated: null
+};
+let pendingFiles = [];
+let chartStatus, chartStrategy;
+
+// ─── Save/Load LOCAL cache ───
+function saveLocalCache(){
+  const toSave = JSON.parse(JSON.stringify(DB));
+  toSave.updates = toSave.updates.map(u=>({...u,files:(u.files||[]).map(f=>({name:f.name,size:f.size,type:f.type,driveLink:f.driveLink||''}))}));
+  localStorage.setItem('fossilPlanDB', JSON.stringify(toSave));
+}
+function loadLocalCache(){
+  const raw = localStorage.getItem('fossilPlanDB');
+  if(!raw) return false;
+  try{
+    const d=JSON.parse(raw);
+    DB=d;
+    if(!DB.plans) DB.plans=[];
+    if(!DB.indicators) DB.indicators=[];
+    if(!DB.alertEmails) DB.alertEmails=[];
+    if(!DB.users) DB.users=[];
+    return true;
+  }catch{ return false; }
+}
+
+// ═══════════════════════════════════════════════════
+// ★ GOOGLE SHEETS SYNC
+// ═══════════════════════════════════════════════════
+function showLoading(msg, sub){
+  const ov = document.getElementById('loadingOverlay');
+  document.getElementById('loadingMsg').textContent = msg||'กำลังโหลดข้อมูล...';
+  document.getElementById('loadingSub').textContent = sub||'กรุณารอสักครู่';
+  ov.style.display='flex';
+}
+function hideLoading(){ document.getElementById('loadingOverlay').style.display='none'; }
+
+function setConnStatus(type, text){
+  const dot = document.getElementById('connDot');
+  const label = document.getElementById('gsConnStatus');
+  if(dot) dot.style.background = type==='ok'?'#2ecc71': type==='err'?'#e74c3c':'#f39c12';
+  if(label) label.textContent = text;
+}
+
+// ★ ฟังก์ชันหลัก: ดึงข้อมูลทั้งหมดจาก Google Sheets
+async function pullFromSheets(silent=false){
+  if(!silent) showLoading('กำลังดึงข้อมูลจาก Google Sheets...','กรุณารอสักครู่');
+  setConnStatus('pending','⏳ กำลังโหลด...');
+  try{
+    const url = GAS_URL + '?action=getAll&t=' + Date.now();
+    const res = await fetch(url, {signal: AbortSignal.timeout(20000)});
+    const text = await res.text();
+    let data;
+    try{ data = JSON.parse(text); }
+    catch{ throw new Error('Apps Script ตอบกลับผิดรูปแบบ: ' + text.substring(0,100)); }
+
+    if(!data.ok) throw new Error(data.error||'getAll ล้มเหลว');
+
+    // merge ข้อมูลจาก Sheets เข้า DB
+    if(Array.isArray(data.projects) && data.projects.length > 0){
+      DB.projects = data.projects;
+    }
+    if(Array.isArray(data.updates) && data.updates.length > 0){
+      DB.updates = data.updates;
+    }
+    if(Array.isArray(data.plans) && data.plans.length > 0){
+      DB.plans = data.plans;
+    }
+    if(Array.isArray(data.indicators) && data.indicators.length > 0){
+      DB.indicators = data.indicators;
+    }
+    if(Array.isArray(data.alertEmails)){
+      DB.alertEmails = data.alertEmails;
+    }
+    if(Array.isArray(data.users)){
+      DB.users = data.users;
+    }
+    DB.lastUpdated = Date.now();
+    saveLocalCache();
+
+    setConnStatus('ok','✅ ซิงก์แล้ว ' + thaiTime(Date.now()));
+    renderDashboard(); renderProjectTable(); checkAlertDot();
+    if(!silent) showToast('โหลดข้อมูลล่าสุดจาก Google Sheets สำเร็จ ✅');
+  } catch(e){
+    setConnStatus('err','❌ โหลดล้มเหลว — ใช้ข้อมูลในเครื่อง');
+    console.error('pullFromSheets error:', e);
+    if(!silent) showToast('⚠️ โหลดจาก Sheets ไม่ได้: ' + e.message, 'red');
+  } finally{
+    hideLoading();
+  }
+}
+
+// ★ ส่งข้อมูล update ไปที่ Sheets
+async function pushUpdateToSheets(update, project){
+  const payload = {
+    action: 'addUpdate',
+    data: {
+      id: update.id,
+      timestamp: thaiDate(update.timestamp),
+      projectId: project.id,
+      projectName: project.name,
+      plan: project.plan||'',
+      indicator: project.indicator||'',
+      owner: project.owner||'',
+      year: update.year,
+      quarter: update.quarter,
+      reporter: update.reporter,
+      progress: update.progress,
+      status: update.status,
+      activity: update.activity,
+      problems: update.problems||'',
+      solution: update.solution||'',
+      budgetUsed: update.budgetUsed||0,
+      files: (update.files||[]).map(f=>({name:f.name,size:f.size,type:f.type,driveLink:f.driveLink||''}))
+    }
+  };
+  const res = await fetch(GAS_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(15000)
+  });
+  const text = await res.text();
+  let json;
+  try{ json = JSON.parse(text); } catch{ json = {ok: res.ok, text}; }
+  if(!json.ok && !text.includes('ok') && !text.includes('success')) throw new Error(text.substring(0,120));
+  return json;
+}
+
+// ★ ส่งข้อมูลโครงการไปที่ Sheets
+async function pushProjectToSheets(project, action='saveProject'){
+  const payload = { action, data: project };
+  const res = await fetch(GAS_URL, { method:'POST', body:JSON.stringify(payload), signal:AbortSignal.timeout(15000) });
+  const text = await res.text();
+  let json; try{ json=JSON.parse(text); }catch{ json={ok:res.ok}; }
+  if(!json.ok) throw new Error(text.substring(0,120));
+  return json;
+}
+
+function manualSync(){ pullFromSheets(false); }
+
+// ═══════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════
+async function bootApp(){
+  // โหลด cache ก่อนแสดงผล ไม่ต้องรอ Sheets
+  loadLocalCache();
+  renderDashboard();
+  renderProjectTable();
+  initCurrentQuarter();
+  applyRoleUI();
+
+  // จากนั้น pull จาก Sheets จริง (แสดง loading overlay)
+  await pullFromSheets(false);
+
+  // Re-render หลังได้ข้อมูลใหม่
+  renderDashboard();
+  renderProjectTable();
+  checkAlertDot();
+  refreshUpdateForm();
+}
+
+// ═══════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════
+function showPage(id, el){
+  if(id==='settings'&&!isAdmin()){showToast('เฉพาะผู้ดูแลระบบเท่านั้น');return;}
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sidebar .nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(el) el.classList.add('active');
+  if(id==='dashboard')  renderDashboard();
+  if(id==='projects')   renderProjectTable();
+  if(id==='update')     refreshUpdateForm();
+  if(id==='alerts')     renderAlerts();
+  if(id==='history')    renderHistory();
+  if(id==='settings')   renderSettings();
+}
+
+// ═══════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).substr(2,5); }
+function fmt(n){ return n?parseInt(n).toLocaleString('th-TH'):'0'; }
+function getProject(id){ return DB.projects.find(p=>p.id===id); }
+function getProjectUpdates(id){ return DB.updates.filter(u=>u.projectId===id).sort((a,b)=>b.timestamp-a.timestamp); }
+function getLatestUpdate(id){ return getProjectUpdates(id)[0]||null; }
+function getLatestUpdateFiltered(id,yearF,qF){
+  let us=DB.updates.filter(u=>u.projectId===id);
+  if(yearF) us=us.filter(u=>String(u.year)===String(yearF));
+  if(qF)    us=us.filter(u=>String(u.quarter)===String(qF));
+  us.sort((a,b)=>b.timestamp-a.timestamp);
+  return us[0]||null;
+}
+function getProgress(id){ const u=getLatestUpdate(id); return u?u.progress:0; }
+function getStatus(id){ const u=getLatestUpdate(id); if(!u) return 'ยังไม่เริ่ม'; return computeStatus(getProject(id),u.progress,u.year,u.quarter); }
+function getProgressFiltered(id,yF,qF){ const u=getLatestUpdateFiltered(id,yF,qF); return u?u.progress:0; }
+function getStatusFiltered(id,yF,qF){ const u=getLatestUpdateFiltered(id,yF,qF); if(!u) return 'ยังไม่เริ่ม'; return computeStatus(getProject(id),u.progress,u.year,u.quarter); }
+function statusColor(s){ if(s==='เสร็จสิ้น')return 'success'; if(s==='ปกติ'||s==='ยังไม่เริ่ม')return 'info'; if(s==='ล่าช้า')return 'warning'; if(s==='วิกฤต')return 'danger'; return 'gray'; }
+
+// ═══════════════════════════════════════════════════
+// ★ QUARTER TARGET ENGINE — คำนวณสถานะอัตโนมัติจาก %เป้าหมายรายไตรมาส (4 ไตรมาส) เทียบกับ %ที่รายงานจริง
+// ผู้ดูแลระบบกรอกค่า % เป้าหมายสะสมของไตรมาส 1–4 ไว้ตอนเพิ่ม/แก้ไขโครงการ (เช่น Q1=25, Q2=50, Q3=75, Q4=100)
+// เมื่อมีคนรายงานความคืบหน้าในไตรมาสใด ระบบจะเทียบ % ที่รายงานจริง กับค่าเป้าหมายของไตรมาสนั้น
+// ═══════════════════════════════════════════════════
+function getQuarterTarget(p, fy, q){
+  q = parseInt(q);
+  if(p && p.quarterTargets && p.quarterTargets['Q'+q] != null) return Number(p.quarterTargets['Q'+q]);
+  // ไม่มีค่าที่ตั้งไว้ -> ใช้ค่าเริ่มต้นแบ่งเท่าๆกัน (Q1=25,Q2=50,Q3=75,Q4=100)
+  return q*25;
+}
+// คำนวณสถานะอัตโนมัติ: เทียบ % ที่รายงานจริง กับ % เป้าหมายของไตรมาสที่รายงาน
+function computeStatus(p, actualProgress, year, quarter){
+  if(actualProgress>=100) return 'เสร็จสิ้น';
+  if(!p) return 'ปกติ';
+  const target=getQuarterTarget(p, year, quarter);
+  const diff=target-actualProgress; // ถ้าเป็นบวก แสดงว่าทำได้น้อยกว่าเป้า
+  if(diff<=0) return 'ปกติ';
+  if(diff<=15) return 'ล่าช้า';
+  return 'วิกฤต';
+}
+function collectQuarterTargets(){
+  return {
+    Q1: parseInt(document.getElementById('qt_Q1').value)||25,
+    Q2: parseInt(document.getElementById('qt_Q2').value)||50,
+    Q3: parseInt(document.getElementById('qt_Q3').value)||75,
+    Q4: parseInt(document.getElementById('qt_Q4').value)||100
+  };
+}
+function loadQuarterTargetsForEdit(p){
+  const qt = (p && p.quarterTargets) ? p.quarterTargets : {};
+  document.getElementById('qt_Q1').value = qt.Q1!=null ? qt.Q1 : 25;
+  document.getElementById('qt_Q2').value = qt.Q2!=null ? qt.Q2 : 50;
+  document.getElementById('qt_Q3').value = qt.Q3!=null ? qt.Q3 : 75;
+  document.getElementById('qt_Q4').value = qt.Q4!=null ? qt.Q4 : 100;
+}
+function resetQuarterTargetsDefault(){
+  document.getElementById('qt_Q1').value = 25;
+  document.getElementById('qt_Q2').value = 50;
+  document.getElementById('qt_Q3').value = 75;
+  document.getElementById('qt_Q4').value = 100;
+}
+function progressBarClass(p){ if(p>=90)return 'success'; if(p>=60)return 'info'; if(p>=30)return 'warning'; return 'danger'; }
+function thaiDate(ts){
+  const d=new Date(ts);
+  const m=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()+543} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} น.`;
+}
+function thaiTime(ts){ const d=new Date(ts); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} น.`; }
+function thaiMonth(m){ const n=['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม']; return n[m]||''; }
+function fileIcon(n){ const e=n.split('.').pop().toLowerCase(); if(e==='pdf')return '📄'; if(['doc','docx'].includes(e))return '📝'; if(['xls','xlsx'].includes(e))return '📊'; if(['png','jpg','jpeg','gif'].includes(e))return '🖼️'; return '📎'; }
+function fmtSize(b){ if(b<1024)return b+' B'; if(b<1048576)return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
+function checkAlertDot(){
+  const latestByProject={};
+  DB.updates.forEach(u=>{ if(!latestByProject[u.projectId]||u.timestamp>latestByProject[u.projectId].timestamp) latestByProject[u.projectId]=u; });
+  const c=Object.values(latestByProject).some(u=>{
+    const p=getProject(u.projectId); if(!p)return false;
+    const s=computeStatus(p,u.progress,u.year,u.quarter);
+    return s==='วิกฤต'||s==='ล่าช้า';
+  });
+  document.getElementById('alertDot').style.display=c?'inline-block':'none';
+}
+
+// ═══════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════
+function renderDashboard(){
+  const yearF=document.getElementById('dashYearFilter').value;
+  const qF=document.getElementById('dashQFilter').value;
+  let projects=DB.projects;
+  if(yearF) projects=projects.filter(p=>p.startYear<=yearF&&p.endYear>=yearF);
+  const total=projects.length;
+  let done=0,normal=0,late=0,crisis=0,notStart=0,totalProgress=0;
+  projects.forEach(p=>{
+    const u=getLatestUpdateFiltered(p.id,yearF,qF);
+    const s=u?computeStatus(p,u.progress,u.year,u.quarter):'ยังไม่เริ่ม'; const prog=u?u.progress:0;
+    totalProgress+=prog;
+    if(s==='เสร็จสิ้น')done++; else if(s==='ปกติ')normal++; else if(s==='ล่าช้า')late++; else if(s==='วิกฤต')crisis++; else notStart++;
+  });
+  const avgProg=total?Math.round(totalProgress/total):0;
+  const yearLabel=yearF?`พ.ศ. ${yearF}`:'ระยะ 5 ปี (2566–2570)';
+  const qLabel=qF?` ไตรมาส ${qF}`:'';
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="stat-card info"><div class="stat-label">โครงการทั้งหมด</div><div class="stat-value" style="color:var(--info)">${total}</div><div class="stat-sub">${yearLabel}${qLabel}</div></div>
+    <div class="stat-card success"><div class="stat-label">เสร็จสิ้น</div><div class="stat-value" style="color:var(--success)">${done}</div><div class="stat-sub">โครงการ</div></div>
+    <div class="stat-card warning"><div class="stat-label">ล่าช้า</div><div class="stat-value" style="color:var(--warning)">${late}</div><div class="stat-sub">โครงการ</div></div>
+    <div class="stat-card danger"><div class="stat-label">วิกฤต</div><div class="stat-value" style="color:var(--danger)">${crisis}</div><div class="stat-sub">โครงการ</div></div>
+    <div class="stat-card"><div class="stat-label">ความคืบหน้าเฉลี่ย</div><div class="stat-value" style="color:var(--primary)">${avgProg}%</div><div class="stat-sub">ภาพรวม</div></div>`;
+  let bannerHtml='';
+  if(crisis>0) bannerHtml+=`<div class="alert alert-danger"><span class="alert-icon">🔴</span><span>มี <strong>${crisis} โครงการ</strong> สถานะ <strong>วิกฤต</strong>!</span></div>`;
+  if(late>0)   bannerHtml+=`<div class="alert alert-warning"><span class="alert-icon">⚠️</span><span>มี <strong>${late} โครงการ</strong> สถานะ <strong>ล่าช้า</strong></span></div>`;
+  document.getElementById('alertBanner').innerHTML=bannerHtml;
+  const allTS=DB.updates.map(u=>u.timestamp).sort((a,b)=>b-a);
+  document.getElementById('dashLastUpdate').textContent=allTS.length?'อัปเดตล่าสุด: '+thaiDate(allTS[0]):'ยังไม่มีการอัปเดต';
+
+  // Donut chart
+  const sCtx=document.getElementById('chartStatus').getContext('2d');
+  if(chartStatus) chartStatus.destroy();
+  chartStatus=new Chart(sCtx,{type:'doughnut',
+    data:{labels:['เสร็จสิ้น','ปกติ','ล่าช้า','วิกฤต','ยังไม่เริ่ม'],
+      datasets:[{data:[done,normal,late,crisis,notStart],backgroundColor:['#27ae60','#2980b9','#e67e22','#c0392b','#bdc3c7'],borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:12},boxWidth:14}}}}});
+
+  // Bar chart
+  const planCtx=document.getElementById('chartStrategy').getContext('2d');
+  if(chartStrategy) chartStrategy.destroy();
+  const planLabels=DB.plans.map((p,i)=>{const m=p.match(/เรื่องที่\s*(\d+)/);return m?`เรื่องที่ ${m[1]}`:`แผน ${i+1}`;});
+  const planColors=['#2d7a61','#2980b9','#c8892a','#8e44ad'];
+  const planProgress=DB.plans.map(plan=>{
+    const ps=DB.projects.filter(p=>p.plan===plan);
+    if(!ps.length) return 0;
+    const sum=ps.reduce((acc,p)=>acc+getProgressFiltered(p.id,yearF,qF),0);
+    return Math.round(sum/ps.length);
+  });
+  chartStrategy=new Chart(planCtx,{type:'bar',
+    data:{labels:planLabels,datasets:[{label:'ความคืบหน้าเฉลี่ย (%)',data:planProgress,backgroundColor:planColors.slice(0,DB.plans.length),borderRadius:8,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'}}},plugins:{legend:{display:false}}}});
+
+  // Project list
+  const sorted=[...projects].sort((a,b)=>getProgressFiltered(b.id,yearF,qF)-getProgressFiltered(a.id,yearF,qF)).slice(0,8);
+  document.getElementById('dashProjectList').innerHTML=sorted.length?sorted.map(p=>{
+    const prog=getProgressFiltered(p.id,yearF,qF); const s=getStatusFiltered(p.id,yearF,qF);
+    return `<div style="margin-bottom:12px;cursor:pointer;" onclick="viewProject('${p.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:13px;font-weight:500;">${p.name}</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span class="badge badge-${statusColor(s)}">${s}</span>
+          <span style="font-size:13px;font-weight:700;min-width:36px;text-align:right;">${prog}%</span>
+        </div>
+      </div>
+      <div class="progress-wrap"><div class="progress-bar ${progressBarClass(prog)}" style="width:${prog}%"></div></div>
+    </div>`;
+  }).join(''):'<div class="empty-state"><div class="empty-state-icon">📋</div><p>ยังไม่มีโครงการ</p></div>';
+}
+
+// ═══════════════════════════════════════════════════
+// PROJECTS TABLE
+// ═══════════════════════════════════════════════════
+function renderProjectTable(){
+  const pf=document.getElementById('filterPlan');
+  if(pf&&pf.options.length<=1){ DB.plans.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p.substring(0,40);pf.appendChild(o);}); }
+  const search=(document.getElementById('searchProj')?.value||'').toLowerCase();
+  const planF=document.getElementById('filterPlan')?.value||'';
+  const statusF=document.getElementById('filterStatus')?.value||'';
+  const yearF=document.getElementById('filterYear')?.value||'';
+  let filtered=DB.projects.filter(p=>{
+    const inS=!search||p.name.toLowerCase().includes(search)||(p.owner||'').toLowerCase().includes(search);
+    const inP=!planF||p.plan===planF;
+    const eff_s=yearF?getStatusFiltered(p.id,yearF,''):getStatus(p.id);
+    const inSt=!statusF||eff_s===statusF;
+    return inS&&inP&&inSt;
+  });
+  const tbody=document.getElementById('projectTableBody');
+  tbody.innerHTML=filtered.length?filtered.map((p,idx)=>{
+    const prog=yearF?getProgressFiltered(p.id,yearF,''):getProgress(p.id);
+    const s=yearF?getStatusFiltered(p.id,yearF,''):getStatus(p.id);
+    // ปุ่มจัดการ: ผู้ดูแลระบบเห็นดูรายละเอียด+แก้ไข+ลบ / ผู้ใช้งานทั่วไปเห็นแค่ดูรายละเอียด
+    const manageBtns = isAdmin()
+      ? `<button class="btn btn-sm btn-outline" onclick="viewProject('${p.id}')" title="ดูรายละเอียด">🔍</button>
+         <button class="btn btn-sm btn-outline" onclick="editProject('${p.id}')" title="แก้ไขโครงการ">✏️</button>
+         <button class="btn btn-sm" style="background:var(--danger-light);color:var(--danger);border:1px solid #fac5c0;" onclick="deleteProject('${p.id}')" title="ลบโครงการ">🗑️</button>`
+      : `<button class="btn btn-sm btn-outline" onclick="viewProject('${p.id}')" title="ดูรายละเอียด">🔍 ดูรายละเอียด</button>`;
+    return `<tr>
+      <td class="text-center" style="font-weight:600;color:var(--text-muted);">${idx+1}</td>
+      <td style="max-width:240px;">
+        <strong style="cursor:pointer;" onclick="viewProject('${p.id}')">${p.name}</strong>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${p.plan?p.plan.replace('แผนปฏิบัติการ ',''):'—'}${p.indicator?' · '+p.indicator:''}</div>
+      </td>
+      <td style="font-size:13px;white-space:nowrap;">พ.ศ. ${p.planYear||p.startYear||'—'}</td>
+      <td style="font-size:13px;white-space:nowrap;">${thaiMonth(p.startMonth)} ${p.startYear||''}</td>
+      <td style="font-size:13px;white-space:nowrap;">${thaiMonth(p.endMonth)} ${p.endYear||''}</td>
+      <td style="min-width:150px;">
+        <div class="pct-cell"><span class="pct-num" style="color:${prog>=70?'var(--success)':prog>=40?'var(--warning)':'var(--danger)'};">${prog}%</span>
+        <div class="progress-wrap" style="flex:1;"><div class="progress-bar ${progressBarClass(prog)}" style="width:${prog}%"></div></div></div>
+      </td>
+      <td><span class="badge badge-${statusColor(s)}">${s}</span></td>
+      <td class="no-print" style="white-space:nowrap;">${manageBtns}</td>
+    </tr>`;
+  }).join(''):`<tr><td colspan="8"><div class="empty-state"><div class="empty-state-icon">🔍</div><h3>ไม่พบโครงการ</h3></div></td></tr>`;
+}
+
+// ═══════════════════════════════════════════════════
+// ADD / EDIT / DELETE PROJECT
+// ═══════════════════════════════════════════════════
+function openAddProject(){
+  if(!isAdmin()){showToast('เฉพาะผู้ดูแลระบบ');return;}
+  document.getElementById('editProjectId').value='';
+  document.getElementById('projectModalTitle').textContent='เพิ่มโครงการใหม่';
+  ['projName','projKPI','projOwner','projBudget'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('newProjYear').value='2569';
+  document.getElementById('projStartMonth').value='10'; document.getElementById('projStartYear').value='2566';
+  document.getElementById('projEndMonth').value='9'; document.getElementById('projEndYear').value='2570';
+  refreshPlanSelect('projPlan'); refreshIndicatorSelect('projIndicator');
+  resetQuarterTargetsDefault();
+  openModal('projectModal');
+}
+function editProject(id){
+  if(!isAdmin()){showToast('เฉพาะผู้ดูแลระบบ');return;}
+  const p=getProject(id); if(!p)return;
+  document.getElementById('editProjectId').value=id;
+  document.getElementById('projectModalTitle').textContent='แก้ไขโครงการ';
+  document.getElementById('projName').value=p.name||'';
+  document.getElementById('projKPI').value=p.kpi||'';
+  document.getElementById('projOwner').value=p.owner||'';
+  document.getElementById('projBudget').value=p.budget||'';
+  document.getElementById('newProjYear').value=p.planYear||p.startYear||'2569';
+  document.getElementById('projStartMonth').value=p.startMonth||'10';
+  document.getElementById('projStartYear').value=p.startYear||'2566';
+  document.getElementById('projEndMonth').value=p.endMonth||'9';
+  document.getElementById('projEndYear').value=p.endYear||'2570';
+  refreshPlanSelect('projPlan',p.plan); refreshIndicatorSelect('projIndicator',p.indicator);
+  loadQuarterTargetsForEdit(p);
+  openModal('projectModal');
+}
+async function saveProject(){
+  if(!isAdmin())return;
+  const name=document.getElementById('projName').value.trim();
+  const owner=document.getElementById('projOwner').value.trim();
+  const plan=document.getElementById('projPlan').value;
+  if(!name||!owner||!plan){alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบ');return;}
+  const editId=document.getElementById('editProjectId').value;
+  const quarterTargets=collectQuarterTargets();
+  const proj={
+    id:editId||uid(), plan, indicator:document.getElementById('projIndicator').value,
+    name, kpi:document.getElementById('projKPI').value.trim(), owner,
+    planYear:document.getElementById('newProjYear').value,
+    startMonth:parseInt(document.getElementById('projStartMonth').value),
+    startYear:document.getElementById('projStartYear').value,
+    endMonth:parseInt(document.getElementById('projEndMonth').value),
+    endYear:document.getElementById('projEndYear').value,
+    budget:parseInt(document.getElementById('projBudget').value)||0,
+    quarterTargets,
+    createdAt:editId?(getProject(editId)?.createdAt||Date.now()):Date.now()
+  };
+  if(editId){ const i=DB.projects.findIndex(p=>p.id===editId); if(i>-1)DB.projects[i]=proj; }
+  else DB.projects.push(proj);
+  saveLocalCache(); closeModal('projectModal'); renderProjectTable(); renderDashboard();
+  // Push to Sheets
+  try{ await pushProjectToSheets(proj, editId?'updateProject':'saveProject'); showToast('บันทึกโครงการและ sync Sheets สำเร็จ ✅'); }
+  catch(e){ showToast('บันทึกในเครื่องแล้ว แต่ Sheets sync ล้มเหลว: '+e.message,'red'); }
+}
+async function deleteProject(id){
+  if(!isAdmin())return;
+  const p=getProject(id);
+  if(!confirm(`ลบโครงการ "${p?.name}"?`))return;
+  DB.projects=DB.projects.filter(x=>x.id!==id);
+  DB.updates=DB.updates.filter(u=>u.projectId!==id);
+  saveLocalCache(); renderProjectTable(); showToast('ลบโครงการแล้ว');
+  try{ await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'deleteProject',data:{id}})}); }catch{}
+}
+
+// ═══════════════════════════════════════════════════
+// VIEW PROJECT DETAIL
+// ═══════════════════════════════════════════════════
+function viewProject(id){
+  const p=getProject(id); if(!p)return;
+  const updates=getProjectUpdates(id);
+  const prog=getProgress(id); const s=getStatus(id);
+  const totalBudgetUsed=updates.reduce((sum,u)=>sum+(u.budgetUsed||0),0);
+  document.getElementById('detailModalTitle').textContent=p.name;
+  document.getElementById('projectDetailBody').innerHTML=`
+    <div class="grid-2" style="margin-bottom:20px;">
+      <div>
+        <div style="margin-bottom:10px;"><span style="font-size:12px;color:var(--text-muted);">แผนปฏิบัติการ</span><br><strong>${p.plan||'—'}</strong></div>
+        <div style="margin-bottom:10px;"><span style="font-size:12px;color:var(--text-muted);">หน่วยงาน</span><br><strong>${p.owner||'—'}</strong></div>
+        <div><span style="font-size:12px;color:var(--text-muted);">ระยะเวลา</span><br>${thaiMonth(p.startMonth)} ${p.startYear} – ${thaiMonth(p.endMonth)} ${p.endYear}</div>
+      </div>
+      <div>
+        <div style="margin-bottom:10px;"><span style="font-size:12px;color:var(--text-muted);">ค่าเป้าหมาย (KPI)</span><br><strong>${p.kpi||'—'}</strong></div>
+        <div><span style="font-size:12px;color:var(--text-muted);">งบประมาณรวม</span><br><strong>${fmt(p.budget)} บาท</strong> | ใช้แล้ว <strong>${fmt(totalBudgetUsed)} บาท</strong></div>
+      </div>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <strong>ความคืบหน้าสะสม</strong>
+        <div style="display:flex;gap:8px;align-items:center;"><span class="badge badge-${statusColor(s)}">${s}</span><span style="font-size:24px;font-weight:700;color:var(--primary);">${prog}%</span></div>
+      </div>
+      <div class="progress-wrap" style="height:14px;"><div class="progress-bar ${progressBarClass(prog)}" style="width:${prog}%;height:14px;"></div></div>
+    </div>
+    <div class="section-title">ประวัติการรายงาน</div>
+    ${updates.length?`<div class="timeline">${updates.map(u=>`
+      <div class="tl-item">
+        <div class="tl-dot" style="background:${u.status==='วิกฤต'?'var(--danger)':u.status==='ล่าช้า'?'var(--warning)':'var(--success)'};"></div>
+        <div class="tl-content">
+          <div class="tl-meta">${thaiDate(u.timestamp)} · ปี ${u.year} Q${u.quarter} · <strong>${u.reporter}</strong> · <span class="badge badge-${statusColor(u.status)}">${u.status}</span> · ${u.progress}%</div>
+          <div class="tl-text" style="margin-bottom:4px;"><strong>ผลการดำเนินงาน:</strong> ${u.activity}</div>
+          ${u.problems?`<div class="tl-text" style="color:var(--warning)"><strong>ปัญหา:</strong> ${u.problems}</div>`:''}
+          ${u.solution?`<div class="tl-text" style="color:var(--success)"><strong>แนวทาง:</strong> ${u.solution}</div>`:''}
+        </div>
+      </div>`).join('')}</div>`:'<div class="empty-state"><p>ยังไม่มีการรายงาน</p></div>'}`;
+  openModal('projectDetailModal');
+}
+
+// ═══════════════════════════════════════════════════
+// UPDATE FORM
+// ═══════════════════════════════════════════════════
+function refreshUpdateForm(){
+  const sel=document.getElementById('updProjectId');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— เลือกโครงการ —</option>';
+  DB.projects.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;sel.appendChild(o);});
+  if(cur) sel.value=cur;
+  document.getElementById('gsheetsNotice').innerHTML=`
+    <div style="background:var(--google-light);border:1.5px solid var(--google);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--google);display:flex;align-items:center;gap:12px;">
+      <span style="font-size:20px;">🔗</span>
+      <span><strong>เชื่อมต่อ Google Sheets แล้ว</strong> — ข้อมูลจะ sync อัตโนมัติทุกครั้งที่บันทึก
+      <a href="https://docs.google.com/spreadsheets/d/1aIlIWVtqP21YQl4DfW1tI1TlMIwHwv31q9fKpCzmJ5k/edit" target="_blank" style="color:var(--google);font-weight:600;margin-left:8px;">เปิด Sheets 🔗</a></span>
+    </div>`;
+}
+function loadProjectForUpdate(){
+  const id=document.getElementById('updProjectId').value;
+  if(!id){document.getElementById('projInfoCard').style.display='none';updateStatusPreview();return;}
+  const p=getProject(id); if(!p)return;
+  const lu=getLatestUpdate(id);
+  document.getElementById('projInfoCard').style.display='block';
+  document.getElementById('projInfoBody').innerHTML=`
+    <div style="font-size:13px;margin-bottom:8px;"><strong>${p.name}</strong></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
+      <div><span style="color:var(--text-muted);">หน่วยงาน:</span> ${p.owner||'—'}</div>
+      <div><span style="color:var(--text-muted);">งบประมาณ:</span> ${fmt(p.budget)} บาท</div>
+    </div>
+    ${lu?`<div style="margin-top:10px;padding:10px;background:var(--primary-pale);border-radius:8px;font-size:12px;">
+      <strong>อัปเดตล่าสุด:</strong> ${thaiDate(lu.timestamp)}<br>
+      ความคืบหน้า: <strong>${lu.progress}%</strong> · <span class="badge badge-${statusColor(computeStatus(p,lu.progress,lu.year,lu.quarter))}">${computeStatus(p,lu.progress,lu.year,lu.quarter)}</span>
+    </div>`:'<div style="margin-top:8px;font-size:12px;color:var(--text-muted);">ยังไม่มีการรายงาน</div>'}`;
+  if(lu){
+    document.getElementById('updProgress').value=lu.progress;
+    document.getElementById('updProgressVal').textContent=lu.progress+'%';
+  }
+  updateStatusPreview();
+}
+function onUpdProgressInput(val){
+  document.getElementById('updProgressVal').textContent=val+'%';
+  updateStatusPreview();
+}
+function updateStatusPreview(){
+  const id=document.getElementById('updProjectId').value;
+  const el=document.getElementById('updStatusPreview');
+  if(!id){ el.innerHTML='<span class="badge badge-info">— เลือกโครงการและกรอกความคืบหน้าก่อน —</span>'; return; }
+  const p=getProject(id); if(!p) return;
+  const progress=parseInt(document.getElementById('updProgress').value)||0;
+  const year=document.getElementById('updYear').value;
+  const quarter=parseInt(document.getElementById('updQuarter').value);
+  const target=getQuarterTarget(p,parseInt(year),quarter);
+  const status=computeStatus(p,progress,year,quarter);
+  el.innerHTML=`<span class="badge badge-${statusColor(status)}">${status}</span>
+    <span style="margin-left:10px;font-size:13px;color:var(--text-muted);">ความคืบหน้าจริง ${progress}% เทียบกับเป้าหมายไตรมาสนี้ ${target}%</span>`;
+}
+
+function handleFiles(e){ addFiles(Array.from(e.target.files)); }
+function dragOver(e){ e.preventDefault(); document.getElementById('fileDrop').classList.add('dragover'); }
+function dragLeave(e){ document.getElementById('fileDrop').classList.remove('dragover'); }
+function dropFile(e){ e.preventDefault(); dragLeave(e); addFiles(Array.from(e.dataTransfer.files)); }
+function addFiles(files){ files.forEach(f=>{if(f.size>10*1024*1024){alert(`ไฟล์ ${f.name} เกิน 10MB`);return;}pendingFiles.push(f);}); renderFileList(); }
+function renderFileList(){ document.getElementById('fileList').innerHTML=pendingFiles.map((f,i)=>`<div class="file-item"><span style="font-size:18px;">${fileIcon(f.name)}</span><span class="file-item-name">${f.name}</span><span class="file-item-size">${fmtSize(f.size)}</span><button class="file-item-remove" onclick="removeFile(${i})">✕</button></div>`).join(''); }
+function removeFile(i){ pendingFiles.splice(i,1); renderFileList(); }
+function clearUpdateForm(){
+  document.getElementById('updProjectId').value='';
+  document.getElementById('updReporter').value=CURRENT_USER?CURRENT_USER.displayName:'';
+  document.getElementById('updProgress').value=0;
+  document.getElementById('updProgressVal').textContent='0%';
+  document.getElementById('updActivity').value='';
+  document.getElementById('updProblems').value='';
+  document.getElementById('updSolution').value='';
+  document.getElementById('updBudgetUsed').value='';
+  pendingFiles=[]; renderFileList();
+  document.getElementById('projInfoCard').style.display='none';
+  updateStatusPreview();
+}
+
+async function submitUpdate(){
+  const projectId=document.getElementById('updProjectId').value;
+  const reporter=document.getElementById('updReporter').value.trim();
+  const progress=parseInt(document.getElementById('updProgress').value);
+  const activity=document.getElementById('updActivity').value.trim();
+  const year=document.getElementById('updYear').value;
+  const quarter=parseInt(document.getElementById('updQuarter').value);
+  if(!projectId){alert('กรุณาเลือกโครงการ');return;}
+  if(!reporter){alert('กรุณาระบุชื่อผู้กรอกข้อมูล');return;}
+  if(!activity){alert('กรุณากรอกผลการดำเนินงาน');return;}
+
+  const project=getProject(projectId);
+  const status=computeStatus(project,progress,year,quarter); // ★ คำนวณสถานะอัตโนมัติ ไม่ให้ผู้ใช้เลือกเอง
+
+  const btn=document.getElementById('submitBtn');
+  btn.disabled=true; btn.textContent='⏳ กำลังบันทึก...';
+  setSyncBadge('pending','⏳ กำลัง sync...');
+
+  const update={
+    id:uid(), projectId, reporter, progress, status, activity, year, quarter,
+    problems:document.getElementById('updProblems').value.trim(),
+    solution:document.getElementById('updSolution').value.trim(),
+    budgetUsed:parseInt(document.getElementById('updBudgetUsed').value)||0,
+    files:pendingFiles.map(f=>({name:f.name,size:f.size,type:f.type})),
+    timestamp:Date.now()
+  };
+
+  // บันทึกในเครื่องก่อนทันที
+  DB.updates.push(update);
+  DB.lastUpdated=Date.now();
+  saveLocalCache();
+  checkAlertDot();
+
+  // Push to Sheets — Apps Script จะส่งอีเมลแจ้งเตือนอัตโนมัติเองถ้าสถานะเป็นล่าช้า/วิกฤต
+  let syncOk=false;
+  try{
+    await pushUpdateToSheets(update, project);
+    syncOk=true;
+    setSyncBadge('ok','✅ Synced to Google Sheets');
+    if(status==='วิกฤต'||status==='ล่าช้า'){
+      showToast(`บันทึกสำเร็จ — สถานะ "${status}" ระบบได้ส่งอีเมลแจ้งเตือนอัตโนมัติแล้ว ✅`);
+    } else {
+      showToast('บันทึกสำเร็จและ sync ไปยัง Google Sheets ✅');
+    }
+  }catch(e){
+    setSyncBadge('err','⚠️ บันทึกในเครื่องแล้ว Sheets sync ล้มเหลว');
+    showToast('บันทึกในเครื่องแล้ว แต่ sync Sheets ล้มเหลว: '+e.message,'red');
+  }
+
+  // Upload files to Drive
+  if(pendingFiles.length>0 && syncOk){
+    for(const f of pendingFiles){
+      try{
+        const base64=await fileToBase64(f);
+        const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'uploadFile',data:{folderId:DRIVE_FOLDER,fileName:f.name,mimeType:f.type,base64}})});
+        const json=await res.json();
+        if(json.link){const fi=update.files.find(x=>x.name===f.name);if(fi)fi.driveLink=json.link;}
+      }catch(e){console.warn('Drive upload failed:',f.name,e);}
+    }
+    saveLocalCache();
+  }
+
+  clearUpdateForm();
+  btn.disabled=false; btn.textContent='💾 บันทึกข้อมูล';
+  renderDashboard(); renderProjectTable();
+}
+
+function fileToBase64(file){ return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);}); }
+function setSyncBadge(type,text){
+  const b=document.getElementById('syncStatusBadge');
+  const cls=type==='ok'?'sync-ok':type==='err'?'sync-err':'sync-pending';
+  b.innerHTML=`<span class="sync-status ${cls}">${type==='pending'?'<span class="sync-dot"></span>':''} ${text}</span>`;
+}
+
+// ═══════════════════════════════════════════════════
+// ALERTS
+// ═══════════════════════════════════════════════════
+function renderAlerts(){
+  renderExtraAlertEmails();
+  const latestByProject={};
+  DB.updates.forEach(u=>{
+    if(!latestByProject[u.projectId]||u.timestamp>latestByProject[u.projectId].timestamp) latestByProject[u.projectId]=u;
+  });
+  const cList=[],lList=[];
+  Object.values(latestByProject).forEach(u=>{
+    const p=getProject(u.projectId); if(!p)return;
+    const s=computeStatus(p,u.progress,u.year,u.quarter);
+    if(s==='วิกฤต') cList.push(u);
+    else if(s==='ล่าช้า') lList.push(u);
+  });
+  let html='';
+  if(cList.length){html+=`<div class="section-title">🔴 โครงการวิกฤต (${cList.length})</div>`;html+=cList.map(u=>alertCard(u,'danger')).join('');}
+  if(lList.length){html+=`<div class="section-title" style="margin-top:20px;">⚠️ โครงการล่าช้า (${lList.length})</div>`;html+=lList.map(u=>alertCard(u,'warning')).join('');}
+  if(!cList.length&&!lList.length) html=`<div class="empty-state"><div class="empty-state-icon">✅</div><h3>ไม่มีการแจ้งเตือน</h3></div>`;
+  document.getElementById('alertsContent').innerHTML=html;
+}
+function alertCard(u,type){
+  const p=getProject(u.projectId);
+  const s=p?computeStatus(p,u.progress,u.year,u.quarter):u.status;
+  return `<div class="card" style="margin-bottom:12px;border-left:4px solid var(--${type});">
+    <div class="card-body" style="padding:14px 16px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><strong>${p?.name||'—'}</strong><span class="badge badge-${type==='danger'?'danger':'warning'}">${s}</span></div>
+      <div style="font-size:13px;color:var(--text-muted);">ปีงบ ${u.year} Q${u.quarter} · ${u.reporter} · ${thaiDate(u.timestamp)} · ความคืบหน้า ${u.progress}%</div>
+      ${u.problems?`<div style="margin-top:6px;font-size:13px;"><strong>ปัญหา:</strong> ${u.problems}</div>`:''}
+      <div style="margin-top:8px;"><button class="btn btn-sm btn-outline" onclick="viewProject('${u.projectId}')">🔍 ดูรายละเอียด</button></div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════
+// ALERT EMAILS MANAGEMENT (เพิ่มเติมจากอีเมลอัตโนมัติตายตัว)
+// ═══════════════════════════════════════════════════
+function renderExtraAlertEmails(){
+  const wrap=document.getElementById('extraAlertEmailList');
+  if(!wrap) return;
+  const emails=DB.alertEmails||[];
+  wrap.innerHTML=emails.length?emails.map((e,i)=>`
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+      <div style="flex:1;padding:7px 12px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;font-size:13px;">📧 ${e}</div>
+      <button class="btn btn-sm" style="background:var(--danger-light);color:var(--danger);border:1px solid #fac5c0;" onclick="removeAlertEmail(${i})">✕</button>
+    </div>`).join(''):'<p style="font-size:13px;color:var(--text-muted);">ยังไม่มีอีเมลเพิ่มเติม</p>';
+}
+async function addAlertEmail(){
+  const input=document.getElementById('newAlertEmail');
+  const email=input.value.trim();
+  if(!email||!email.includes('@')){showToast('กรุณากรอกอีเมลให้ถูกต้อง');return;}
+  if(!DB.alertEmails) DB.alertEmails=[];
+  if(DB.alertEmails.includes(email)){showToast('อีเมลนี้มีอยู่แล้ว');return;}
+  DB.alertEmails.push(email);
+  saveLocalCache(); renderExtraAlertEmails(); input.value='';
+  try{
+    await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'saveAlertEmails',data:{emails:DB.alertEmails}})});
+    showToast('เพิ่มอีเมลแจ้งเตือนแล้ว ✅');
+  }catch(e){ showToast('บันทึกในเครื่องแล้ว แต่ sync Sheets ล้มเหลว','red'); }
+}
+async function removeAlertEmail(i){
+  if(!confirm('ลบอีเมลนี้จากรายการแจ้งเตือน?'))return;
+  DB.alertEmails.splice(i,1);
+  saveLocalCache(); renderExtraAlertEmails();
+  try{
+    await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'saveAlertEmails',data:{emails:DB.alertEmails}})});
+  }catch(e){}
+  showToast('ลบอีเมลแล้ว');
+}
+async function sendManualAlertEmail(){
+  const raw=document.getElementById('manualAlertEmails').value.trim();
+  const subject=document.getElementById('manualAlertSubject').value.trim();
+  const body=document.getElementById('manualAlertBody').value.trim();
+  const emails=raw.split(',').map(e=>e.trim()).filter(Boolean);
+  if(!emails.length){showToast('กรุณากรอกอีเมลผู้รับอย่างน้อย 1 รายการ');return;}
+  if(!subject||!body){showToast('กรุณากรอกหัวข้อและข้อความ');return;}
+  try{
+    const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'sendManualAlert',data:{emails,subject,body}})});
+    const json=await res.json();
+    if(json.ok){
+      showToast('ส่งอีเมลแจ้งเตือนสำเร็จ ✅');
+      document.getElementById('manualAlertEmails').value='';
+      document.getElementById('manualAlertSubject').value='';
+      document.getElementById('manualAlertBody').value='';
+    } else {
+      showToast('ส่งอีเมลล้มเหลว: '+(json.error||''),'red');
+    }
+  }catch(e){
+    showToast('ไม่สามารถเชื่อมต่อระบบได้: '+e.message,'red');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════════════
+function renderHistory(){
+  const filter=document.getElementById('histFilter')?.value||'';
+  const sel=document.getElementById('histFilter');
+  if(sel&&sel.options.length<=1){DB.projects.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.name;sel.appendChild(o);});}
+  const updates=[...DB.updates].filter(u=>!filter||u.projectId===filter).sort((a,b)=>b.timestamp-a.timestamp);
+  document.getElementById('historyContent').innerHTML=updates.length?`<div class="timeline">${updates.map(u=>{
+    const p=getProject(u.projectId);
+    return `<div class="tl-item">
+      <div class="tl-dot" style="background:${u.status==='วิกฤต'?'var(--danger)':u.status==='ล่าช้า'?'var(--warning)':u.status==='เสร็จสิ้น'?'var(--success)':'var(--primary-light)'};"></div>
+      <div class="tl-content">
+        <div class="tl-meta">${thaiDate(u.timestamp)}</div>
+        <div style="font-size:13px;margin-bottom:4px;"><strong>${p?.name||'—'}</strong> · ปี ${u.year} Q${u.quarter} · <strong>${u.reporter}</strong>
+          <span class="badge badge-${statusColor(u.status)}" style="margin-left:6px;">${u.status}</span><strong style="margin-left:6px;">${u.progress}%</strong></div>
+        <div class="tl-text">${u.activity}</div>
+        ${u.problems?`<div class="tl-text" style="color:var(--warning);margin-top:4px;">ปัญหา: ${u.problems}</div>`:''}
+      </div>
+    </div>`;
+  }).join('')}</div>`:'<div class="empty-state"><div class="empty-state-icon">📜</div><h3>ยังไม่มีประวัติ</h3></div>';
+}
+function exportHistory(){
+  const rows=[['วันที่','ปี','ไตรมาส','ชื่อโครงการ','ผู้รายงาน','ความคืบหน้า','สถานะ','กิจกรรม','ปัญหา','แนวทาง','งบที่ใช้']];
+  DB.updates.sort((a,b)=>a.timestamp-b.timestamp).forEach(u=>{
+    const p=getProject(u.projectId);
+    rows.push([thaiDate(u.timestamp),u.year,u.quarter,p?.name||'',u.reporter,u.progress+'%',u.status,u.activity,u.problems||'',u.solution||'',u.budgetUsed||0]);
+  });
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='history.csv';a.click();
+}
+
+// ═══════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════
+function renderSettings(){
+  if(!isAdmin())return;
+  document.getElementById('planList').innerHTML=DB.plans.length?DB.plans.map((p,i)=>`
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+      <div style="flex:1;padding:8px 12px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;font-size:13px;">${p}</div>
+      <button class="btn btn-sm" style="background:var(--danger-light);color:var(--danger);border:1px solid #fac5c0;" onclick="removePlan(${i})">✕</button>
+    </div>`).join(''):'<p style="font-size:13px;color:var(--text-muted);">ยังไม่มีแผนปฏิบัติการ</p>';
+
+  document.getElementById('indicatorList').innerHTML=DB.indicators.length?DB.indicators.map((ind,i)=>`
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+      <div style="flex:1;padding:8px 12px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;font-size:13px;">${ind}</div>
+      <button class="btn btn-sm" style="background:var(--danger-light);color:var(--danger);border:1px solid #fac5c0;" onclick="removeIndicator(${i})">✕</button>
+    </div>`).join(''):'<p style="font-size:13px;color:var(--text-muted);">ยังไม่มีเป้าหมาย/ตัวชี้วัด</p>';
+
+  const users=DB.users||[];
+  document.getElementById('userList').innerHTML=users.length?users.map(u=>`
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+      <div style="flex:1;padding:8px 12px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <span>${u.role==='admin'?'👑':'👤'}</span><strong>${u.displayName}</strong>
+        <span style="color:var(--text-muted);">(${u.username})</span>
+        <span class="badge ${u.role==='admin'?'badge-warning':'badge-info'}">${u.role==='admin'?'Admin':'User'}</span>
+        ${u.status&&u.status.toLowerCase()!=='active'?'<span class="badge badge-gray">ไม่ใช้งาน</span>':''}
+      </div>
+      <button class="btn btn-sm btn-outline" onclick="editUser('${u.id}')" title="แก้ไข">✏️</button>
+      <button class="btn btn-sm" style="background:var(--danger-light);color:var(--danger);border:1px solid #fac5c0;" onclick="deleteUser('${u.id}')" title="ลบ">🗑️</button>
+    </div>`).join(''):'<p style="font-size:13px;color:var(--text-muted);">ยังไม่มีบัญชีผู้ใช้ — กด Sync เพื่อโหลดจาก Sheets</p>';
+
+  document.getElementById('gsheetsUrl').value=GAS_URL;
+  document.getElementById('gsheetsSID').value=SHEET_ID;
+}
+async function addPlan(){
+  const v=document.getElementById('newPlan').value.trim();if(!v)return;
+  DB.plans.push(v);saveLocalCache();renderSettings();document.getElementById('newPlan').value='';
+  try{ await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'savePlans',data:{plans:DB.plans}})}); showToast('เพิ่มแผนแล้ว ✅'); }
+  catch(e){ showToast('บันทึกในเครื่องแล้ว แต่ sync Sheets ล้มเหลว','red'); }
+}
+async function removePlan(i){
+  if(!confirm('ลบแผนนี้?'))return;
+  DB.plans.splice(i,1);saveLocalCache();renderSettings();
+  try{ await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'savePlans',data:{plans:DB.plans}})}); }catch(e){}
+}
+async function addIndicator(){
+  const v=document.getElementById('newIndicator').value.trim();if(!v)return;
+  DB.indicators.push(v);saveLocalCache();renderSettings();document.getElementById('newIndicator').value='';
+  try{ await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'saveIndicators',data:{indicators:DB.indicators}})}); showToast('เพิ่มเป้าหมาย/ตัวชี้วัดแล้ว ✅'); }
+  catch(e){ showToast('บันทึกในเครื่องแล้ว แต่ sync Sheets ล้มเหลว','red'); }
+}
+async function removeIndicator(i){
+  if(!confirm('ลบเป้าหมาย/ตัวชี้วัดนี้?'))return;
+  DB.indicators.splice(i,1);saveLocalCache();renderSettings();
+  try{ await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'saveIndicators',data:{indicators:DB.indicators}})}); }catch(e){}
+}
+function openAddUser(){
+  document.getElementById('editUserId').value='';
+  document.getElementById('addUserTitle').textContent='เพิ่มบัญชีผู้ใช้';
+  ['uUsername','uDisplayName','uPassword','uOrganization','uEmail'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('uRole').value='user';
+  const pwHint=document.getElementById('uPasswordHint'); if(pwHint) pwHint.style.display='none';
+  openModal('addUserModal');
+}
+function editUser(id){
+  const u=(DB.users||[]).find(x=>x.id===id); if(!u)return;
+  document.getElementById('editUserId').value=id;
+  document.getElementById('addUserTitle').textContent='แก้ไขบัญชีผู้ใช้';
+  document.getElementById('uUsername').value=u.username||'';
+  document.getElementById('uDisplayName').value=u.displayName||'';
+  document.getElementById('uPassword').value='';
+  document.getElementById('uRole').value=u.role||'user';
+  const org=document.getElementById('uOrganization'); if(org) org.value=u.organization||'';
+  const em=document.getElementById('uEmail'); if(em) em.value=u.email||'';
+  const pwHint=document.getElementById('uPasswordHint'); if(pwHint) pwHint.style.display='block';
+  openModal('addUserModal');
+}
+async function saveUser(){
+  const id=document.getElementById('editUserId').value;
+  const username=document.getElementById('uUsername').value.trim();
+  const displayName=document.getElementById('uDisplayName').value.trim();
+  const password=document.getElementById('uPassword').value;
+  const role=document.getElementById('uRole').value;
+  const organization=document.getElementById('uOrganization')?.value.trim()||'';
+  const email=document.getElementById('uEmail')?.value.trim()||'';
+  if(!username||!displayName||(!id&&!password)){alert('กรุณากรอกให้ครบ');return;}
+  if(password && password.length<4){alert('รหัสผ่านอย่างน้อย 4 ตัว');return;}
+  if((DB.users||[]).find(u=>u.username===username&&u.id!==id)){alert('ชื่อผู้ใช้นี้มีอยู่แล้ว');return;}
+
+  const payload={ id: id||undefined, username, displayName, password: password||undefined, role, organization, email };
+  try{
+    const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'saveUser',data:payload})});
+    const json=await res.json();
+    if(!json.ok) throw new Error(json.error||'บันทึกล้มเหลว');
+    closeModal('addUserModal');
+    showToast('บันทึกบัญชีผู้ใช้แล้ว ✅ กำลังซิงก์ข้อมูล...');
+    await pullFromSheets(true);
+    renderSettings();
+  }catch(e){
+    showToast('บันทึกล้มเหลว: '+e.message,'red');
+  }
+}
+async function deleteUser(id){
+  if(!confirm('ลบบัญชีนี้?'))return;
+  try{
+    const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'deleteUser',data:{id}})});
+    const json=await res.json();
+    if(!json.ok) throw new Error(json.error||'ลบล้มเหลว');
+    DB.users=(DB.users||[]).filter(u=>u.id!==id);
+    saveLocalCache(); renderSettings();
+    showToast('ลบบัญชีแล้ว');
+  }catch(e){
+    showToast('ลบล้มเหลว: '+e.message,'red');
+  }
+}
+function saveGSheetsConfig(){ showToast('URL ถูกฝังในโค้ดแล้ว ไม่ต้องแก้ไข ✅'); }
+function saveDriveConfig(){ showToast('บันทึกแล้ว ✅'); }
+async function testGSheetsConn(){
+  const el=document.getElementById('gsSyncResult');
+  el.innerHTML='<span style="color:var(--warning);">⏳ กำลังทดสอบ...</span>';
+  try{
+    const r=await fetch(GAS_URL+'?action=ping',{signal:AbortSignal.timeout(15000)});
+    const json=await r.json();
+    if(json.ok){
+      el.innerHTML=`<div style="color:var(--success);">✅ เชื่อมต่อสำเร็จ!</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">
+          ชีตที่เชื่อมต่ออยู่: <strong>${json.connectedSheetName||'-'}</strong><br>
+          Spreadsheet ID: <code>${json.connectedSheetId||'-'}</code><br>
+          แท็บที่พบ: ${(json.sheetsFound||[]).join(', ')||'-'}
+        </div>`;
+    } else {
+      throw new Error(json.error||'ไม่ทราบสาเหตุ');
+    }
+  }catch(e){ el.innerHTML=`<span style="color:var(--danger);">❌ ล้มเหลว: ${e.message}<br><span style="font-size:12px;">ตรวจสอบว่าได้ Deploy Apps Script (Code.gs) และนำ URL มาวางใน APP_URL ในไฟล์ index.html แล้วหรือยัง</span></span>`; }
+}
+
+// ═══════════════════════════════════════════════════
+// SELECT HELPERS
+// ═══════════════════════════════════════════════════
+function refreshPlanSelect(selId,val){ const sel=document.getElementById(selId);sel.innerHTML='<option value="">— เลือกแผนปฏิบัติการ —</option>';DB.plans.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;sel.appendChild(o);});if(val)sel.value=val; }
+function refreshIndicatorSelect(selId,val){ const sel=document.getElementById(selId);sel.innerHTML='<option value="">— เลือกตัวชี้วัด —</option>';DB.indicators.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v;sel.appendChild(o);});if(val)sel.value=val; }
+
+// ═══════════════════════════════════════════════════
+// EXPORT / IMPORT / PRINT
+// ═══════════════════════════════════════════════════
+function exportData(){ const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`fossil-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();showToast('สำรองข้อมูลแล้ว 📥'); }
+function importDataTrigger(){ document.getElementById('importFile').click(); }
+function importData(e){
+  const f=e.target.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{try{
+    const data=JSON.parse(ev.target.result);
+    if(!data.projects)throw new Error('Invalid');
+    if(!confirm(`นำเข้าข้อมูลจาก "${f.name}"?\nข้อมูลปัจจุบันจะถูกแทนที่`))return;
+    DB=data;if(!DB.plans)DB.plans=[];if(!DB.indicators)DB.indicators=[];if(!DB.alertEmails)DB.alertEmails=[];if(!DB.users)DB.users=[];
+    saveLocalCache();renderDashboard();renderProjectTable();showToast('นำเข้าสำเร็จ ✅');
+  }catch{alert('ไฟล์ไม่ถูกต้อง');}};
+  reader.readAsText(f);e.target.value='';
+}
+function clearAllData(){ if(!confirm('⚠️ ล้างข้อมูลทั้งหมด?'))return;DB.projects=[];DB.updates=[];DB.lastUpdated=null;saveLocalCache();renderDashboard();renderProjectTable();showToast('ล้างข้อมูลแล้ว'); }
+function printDashboard(){ window.print(); }
+function printProjectDetail(){
+  const content=document.getElementById('projectDetailBody').innerHTML;
+  const title=document.getElementById('detailModalTitle').textContent;
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>body{font-family:'Sarabun',sans-serif;padding:20px;font-size:14px}.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px}
+    .progress-wrap{background:#e5e7eb;height:10px;border-radius:10px}.progress-bar{height:10px;border-radius:10px;background:#27ae60}
+    .tl-item{display:flex;gap:12px;margin-bottom:16px}.tl-dot{width:10px;height:10px;border-radius:50%;background:#2d7a61;flex-shrink:0;margin-top:5px}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.section-title{font-weight:700;color:#1a4d3e;margin:16px 0 8px}</style>
+    </head><body><h1>${title}</h1>${content}</body></html>`);
+  win.document.close();setTimeout(()=>win.print(),500);
+}
+
+// ═══════════════════════════════════════════════════
+// MODAL / TOAST / SCROLL
+// ═══════════════════════════════════════════════════
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:80px;right:24px;background:#1a4d3e;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-family:Sarabun,sans-serif;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.3);opacity:0;transition:opacity .3s;max-width:320px;';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(()=>t.style.opacity='1',10);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},3500);
+}
+window.addEventListener('scroll',()=>document.getElementById('scrollTop').classList.toggle('visible',scrollY>300));
+
+// ═══════════════════════════════════════════════════
+// INIT QUARTER
+// ═══════════════════════════════════════════════════
+function initCurrentQuarter(){
+  const now=new Date();const m=now.getMonth();
+  const q=m>=9?1:m>=6?4:m>=3?3:2;
+  document.getElementById('updQuarter').value=q;
+  const thY=(now.getFullYear()+543).toString();
+  for(const o of document.getElementById('updYear').options)if(o.value===thY){o.selected=true;break;}
+}
+
+// ═══════════════════════════════════════════════════
+// STARTUP
+// ═══════════════════════════════════════════════════
+if(checkSession()){
+  document.getElementById('loginScreen').style.display='none';
+  bootApp(); // โหลดจาก Sheets ทันที
+}
+</script>
+</body>
+</html>

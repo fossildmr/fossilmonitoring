@@ -1239,7 +1239,6 @@ function manualSync(){ pullFromSheets(false); }
 // ═══════════════════════════════════════════════════
 async function bootApp(){
   // โหลด cache ก่อนแสดงผล ไม่ต้องรอ Sheets
-  localStorage.removeItem('fossilPlanDB'); 
   renderDashboard();
   renderProjectTable();
   initCurrentQuarter();

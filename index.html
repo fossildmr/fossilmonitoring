@@ -1899,9 +1899,28 @@ function renderSettings(){
 async function addPlan(){
   const v=document.getElementById('newPlan').value.trim();if(!v)return;
   DB.plans.push(v);saveLocalCache();renderSettings();document.getElementById('newPlan').value='';
-  try{ await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'savePlans',data:{plans:DB.plans}})}); showToast('เพิ่มแผนแล้ว ✅'); }
-  catch(e){ showToast('บันทึกในเครื่องแล้ว แต่ sync Sheets ล้มเหลว','red'); }
+  try{
+    const res = await fetch(GAS_URL,{
+      method:'POST',
+      body:JSON.stringify({
+        action:'savePlans',
+        data:{plans:DB.plans}
+      })
+    });
+
+    const json = await res.json();
+
+    if(!json.ok){
+      throw new Error(json.error || 'savePlans failed');
+    }
+
+    showToast('เพิ่มแผนแล้ว ✅');
+
+  }catch(e){
+    showToast('บันทึกล้มเหลว : '+e.message,'red');
+  }
 }
+  
 async function removePlan(i){
   if(!confirm('ลบแผนนี้?'))return;
   DB.plans.splice(i,1);saveLocalCache();renderSettings();
@@ -1910,8 +1929,26 @@ async function removePlan(i){
 async function addIndicator(){
   const v=document.getElementById('newIndicator').value.trim();if(!v)return;
   DB.indicators.push(v);saveLocalCache();renderSettings();document.getElementById('newIndicator').value='';
-  try{ await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'saveIndicators',data:{indicators:DB.indicators}})}); showToast('เพิ่มเป้าหมาย/ตัวชี้วัดแล้ว ✅'); }
-  catch(e){ showToast('บันทึกในเครื่องแล้ว แต่ sync Sheets ล้มเหลว','red'); }
+  try{
+    const res = await fetch(GAS_URL,{
+      method:'POST',
+      body:JSON.stringify({
+        action:'savePlans',
+        data:{plans:DB.plans}
+      })
+    });
+
+    const json = await res.json();
+
+    if(!json.ok){
+      throw new Error(json.error || 'savePlans failed');
+    }
+
+    showToast('เพิ่มแผนแล้ว ✅');
+
+  }catch(e){
+    showToast('บันทึกล้มเหลว : '+e.message,'red');
+  }
 }
 async function removeIndicator(i){
   if(!confirm('ลบเป้าหมาย/ตัวชี้วัดนี้?'))return;

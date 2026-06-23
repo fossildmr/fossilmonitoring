@@ -1238,12 +1238,17 @@ function manualSync(){ pullFromSheets(false); }
 // BOOT
 // ═══════════════════════════════════════════════════
 async function bootApp(){
+  // โหลด cache ก่อนแสดงผล ไม่ต้องรอ Sheets
   loadLocalCache();
   renderDashboard();
   renderProjectTable();
   initCurrentQuarter();
   applyRoleUI();
+
+  // จากนั้น pull จาก Sheets จริง (แสดง loading overlay)
   await pullFromSheets(false);
+
+  // Re-render หลังได้ข้อมูลใหม่
   renderDashboard();
   renderProjectTable();
   checkAlertDot();

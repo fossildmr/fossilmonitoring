@@ -1239,8 +1239,7 @@ function manualSync(){ pullFromSheets(false); }
 // ═══════════════════════════════════════════════════
 async function bootApp(){
   // โหลด cache ก่อนแสดงผล ไม่ต้องรอ Sheets
-  localStorage.removeItem('fossilDB');
-  loadLocalCache();
+  localStorage.removeItem('fossilPlanDB'); 
   renderDashboard();
   renderProjectTable();
   initCurrentQuarter();
@@ -1249,7 +1248,6 @@ async function bootApp(){
   // จากนั้น pull จาก Sheets จริง (แสดง loading overlay)
   await pullFromSheets(false);
 
-  // Re-render หลังได้ข้อมูลใหม่
   renderDashboard();
   renderProjectTable();
   checkAlertDot();

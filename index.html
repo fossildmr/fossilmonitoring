@@ -1161,18 +1161,10 @@ async function pullFromSheets(silent=false){
     if(!data.ok) throw new Error(data.error||'getAll ล้มเหลว');
 
     // merge ข้อมูลจาก Sheets เข้า DB
-    if(Array.isArray(data.projects) && data.projects.length > 0){
-      DB.projects = data.projects;
-    }
-    if(Array.isArray(data.updates) && data.updates.length > 0){
-      DB.updates = data.updates;
-    }
-    if(Array.isArray(data.plans) && data.plans.length > 0){
-      DB.plans = data.plans;
-    }
-    if(Array.isArray(data.indicators) && data.indicators.length > 0){
-      DB.indicators = data.indicators;
-    }
+    if(Array.isArray(data.projects)) DB.projects = data.projects;
+    if(Array.isArray(data.updates))  DB.updates  = data.updates;
+    if(Array.isArray(data.plans))    DB.plans    = data.plans;
+    if(Array.isArray(data.indicators)) DB.indicators = data.indicators;
     if(Array.isArray(data.alertEmails)){
       DB.alertEmails = data.alertEmails;
     }
@@ -1247,6 +1239,7 @@ function manualSync(){ pullFromSheets(false); }
 // ═══════════════════════════════════════════════════
 async function bootApp(){
   // โหลด cache ก่อนแสดงผล ไม่ต้องรอ Sheets
+  localStorage.removeItem('fossilDB');
   loadLocalCache();
   renderDashboard();
   renderProjectTable();
